@@ -13,39 +13,18 @@
       <UniqueIdentifier>{67DA6AB6-F800-4c08-8B7A-83BB121AAD01}</UniqueIdentifier>
       <Extensions>rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe;resx;tiff;tif;png;wav;mfcribbon-ms</Extensions>
     </Filter>
-    <Filter Include="Source Files\GraphicsContext">
-      <UniqueIdentifier>{b12d7496-080b-4bda-88c8-2e823d8a8ba5}</UniqueIdentifier>
-    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="src\main.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="src\App.cpp">
+    <ClCompile Include="src\Sandbox.cpp">
       <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="src\ipch.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="src\Window.cpp">
-      <Filter>Source Files\GraphicsContext</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="src\App.h">
+    <ClInclude Include="src\Sandbox.h">
       <Filter>Source Files</Filter>
-    </ClInclude>
-    <ClInclude Include="src\IcebergCore.h">
-      <Filter>Source Files</Filter>
-    </ClInclude>
-    <ClInclude Include="src\ipch.h">
-      <Filter>Source Files</Filter>
-    </ClInclude>
-    <ClInclude Include="src\IcebergAPI.h">
-      <Filter>Source Files</Filter>
-    </ClInclude>
-    <ClInclude Include="src\Window.h">
-      <Filter>Source Files\GraphicsContext</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>
