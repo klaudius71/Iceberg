@@ -97,6 +97,7 @@ namespace Iceberg {
 
 		VkRenderPass renderPass;
 		VkPipelineLayout pipelineLayout;
+		VkPipeline graphicsPipeline;
 
 	public:
 		static void Initialize();
