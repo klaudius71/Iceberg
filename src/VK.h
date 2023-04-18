@@ -94,6 +94,8 @@ namespace Iceberg {
 		VkExtent2D swapChainExtent;
 		std::vector<VkImageView> swapChainImageViews;
 
+		VkPipelineLayout pipelineLayout;
+
 	public:
 		static void Initialize();
 		static VkInstance GetVkInstance();
