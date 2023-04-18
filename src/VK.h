@@ -72,6 +72,7 @@ namespace Iceberg {
 		void CreateSurface();
 
 		VkShaderModule CreateShaderModule(const std::vector<uint8_t>& code);
+		void CreateRenderPass();
 		void CreateGraphicsPipeline();
 
 		void InitializeVulkan();
@@ -94,6 +95,7 @@ namespace Iceberg {
 		VkExtent2D swapChainExtent;
 		std::vector<VkImageView> swapChainImageViews;
 
+		VkRenderPass renderPass;
 		VkPipelineLayout pipelineLayout;
 
 	public:
