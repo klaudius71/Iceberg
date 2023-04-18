@@ -47,14 +47,14 @@ namespace Iceberg {
 			func(inst, debugMessenger, pAllocator);
 	}
 
-	App::QueueFamilyIndices App::FindQueueFamilies(VkPhysicalDevice device)
+	App::QueueFamilyIndices App::FindQueueFamilies(VkPhysicalDevice dev)
 	{
 		QueueFamilyIndices indices{};
 
 		uint32_t queueFamilyCount = 0;
-		vkGetPhysicalDeviceQueueFamilyProperties(device, &queueFamilyCount, nullptr);
+		vkGetPhysicalDeviceQueueFamilyProperties(dev, &queueFamilyCount, nullptr);
 		std::vector<VkQueueFamilyProperties> queueFamilies(queueFamilyCount);
-		vkGetPhysicalDeviceQueueFamilyProperties(device, &queueFamilyCount, queueFamilies.data());
+		vkGetPhysicalDeviceQueueFamilyProperties(dev, &queueFamilyCount, queueFamilies.data());
 
 		for (uint32_t i = 0; i < queueFamilyCount; i++)
 		{
@@ -67,6 +67,13 @@ namespace Iceberg {
 			{
 				indices.computeFamilyExists = true;
 				indices.computeFamily = i;
+			}
+			VkBool32 presentSupport = false;
+			vkGetPhysicalDeviceSurfaceSupportKHR(dev, i, surface, &presentSupport);
+			if (presentSupport)
+			{
+				indices.presentFamily = i;
+				indices.presentFamilyExists = true;
 			}
 		}
 
@@ -85,14 +92,14 @@ namespace Iceberg {
 	
 		return extensions;
 	}
-	bool App::IsDeviceSuitable(VkPhysicalDevice device)
+	bool App::IsDeviceSuitable(VkPhysicalDevice dev)
 	{
 		VkPhysicalDeviceProperties deviceProperties;
 		VkPhysicalDeviceFeatures deviceFeatures;
-		vkGetPhysicalDeviceProperties(device, &deviceProperties);
-		vkGetPhysicalDeviceFeatures(device, &deviceFeatures);
+		vkGetPhysicalDeviceProperties(dev, &deviceProperties);
+		vkGetPhysicalDeviceFeatures(dev, &deviceFeatures);
 
-		QueueFamilyIndices queueFamilies = FindQueueFamilies(device);
+		QueueFamilyIndices queueFamilies = FindQueueFamilies(dev);
 
 		return deviceProperties.deviceType == VK_PHYSICAL_DEVICE_TYPE_DISCRETE_GPU
 			&& deviceFeatures.geometryShader
@@ -142,14 +149,14 @@ namespace Iceberg {
 
 		VkPhysicalDeviceProperties properties;
 		printf("\nSupported GPUs:\n");
-		for (const auto device : devices)
+		for (const auto dev : devices)
 		{
-			vkGetPhysicalDeviceProperties(device, &properties);
+			vkGetPhysicalDeviceProperties(dev, &properties);
 			printf("\t%s", properties.deviceName);
-			if (physicalDevice == VK_NULL_HANDLE && IsDeviceSuitable(device))
+			if (physicalDevice == VK_NULL_HANDLE && IsDeviceSuitable(dev))
 			{
 				printf(" << selected");
-				physicalDevice = device;
+				physicalDevice = dev;
 			}
 			printf("\n");
 		}
@@ -161,19 +168,27 @@ namespace Iceberg {
 	{
 		QueueFamilyIndices indices = FindQueueFamilies(physicalDevice);
 
-		VkDeviceQueueCreateInfo queueCreateInfo{};
-		queueCreateInfo.sType = VK_STRUCTURE_TYPE_DEVICE_QUEUE_CREATE_INFO;
-		queueCreateInfo.queueFamilyIndex = indices.graphicsFamily;
-		queueCreateInfo.queueCount = 1;
+		std::vector<VkDeviceQueueCreateInfo> queueCreateInfos;
+		uint32_t uniqueQueueFamilies[]{ indices.graphicsFamily, indices.presentFamily };
+		std::sort(uniqueQueueFamilies, &uniqueQueueFamilies[1]);
+
 		float queuePriority = 1.0f;
-		queueCreateInfo.pQueuePriorities = &queuePriority;
+		VkDeviceQueueCreateInfo queueCreateInfo{};
+		for (uint32_t queueFamily : uniqueQueueFamilies)
+		{
+			queueCreateInfo.sType = VK_STRUCTURE_TYPE_DEVICE_QUEUE_CREATE_INFO;
+			queueCreateInfo.queueFamilyIndex = queueFamily;
+			queueCreateInfo.queueCount = 1;
+			queueCreateInfo.pQueuePriorities = &queuePriority;
+			queueCreateInfos.emplace_back(queueCreateInfo);
+		}
 
 		VkPhysicalDeviceFeatures deviceFeatures{};
 		
 		VkDeviceCreateInfo createInfo{};
 		createInfo.sType = VK_STRUCTURE_TYPE_DEVICE_CREATE_INFO;
-		createInfo.pQueueCreateInfos = &queueCreateInfo;
-		createInfo.queueCreateInfoCount = 1;
+		createInfo.pQueueCreateInfos = queueCreateInfos.data();
+		createInfo.queueCreateInfoCount = (uint32_t)queueCreateInfos.size();
 		createInfo.pEnabledFeatures = &deviceFeatures;
 
 		createInfo.enabledExtensionCount = 0;
@@ -192,6 +207,13 @@ namespace Iceberg {
 			throw std::exception("Failed to create logical device!");
 
 		vkGetDeviceQueue(device, indices.graphicsFamily, 0, &graphicsQueue);
+		vkGetDeviceQueue(device, indices.presentFamily, 0, &presentQueue);
+	}
+	void App::CreateSurface()
+	{
+		VkResult res = glfwCreateWindowSurface(vulkanInstance, window->GetGLFWWindow(), nullptr, &surface);
+		if (res != VK_SUCCESS)
+			throw std::exception("Failed to create window surface!");
 	}
 	void App::InitializeVulkan()
 	{
@@ -209,7 +231,6 @@ namespace Iceberg {
 		VkInstanceCreateInfo createInfo{};
 		createInfo.sType = VK_STRUCTURE_TYPE_INSTANCE_CREATE_INFO;
 		createInfo.pApplicationInfo = &appInfo;
-
 
 		VkDebugUtilsMessengerCreateInfoEXT debugCreateInfo{};
 		if (ENABLE_VALIDATION_LAYERS)
@@ -245,12 +266,14 @@ namespace Iceberg {
 			printf("\t%s\n", extensions[i].extensionName);
 
 		SetupDebugMessenger();
+		CreateSurface();
 		ChooseVulkanDevice();
 		CreateLogicalDevice();
 	}
 	void App::CleanupVulkan()
 	{
 		vkDestroyDevice(device, nullptr);
+		vkDestroySurfaceKHR(vulkanInstance, surface, nullptr);
 
 		if (ENABLE_VALIDATION_LAYERS)
 			DestroyDebugUtilsMessengerEXT(vulkanInstance, debugMessenger, nullptr);

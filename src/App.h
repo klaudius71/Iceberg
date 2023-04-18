@@ -34,17 +34,20 @@ namespace Iceberg {
 		{
 			uint32_t graphicsFamily;
 			uint32_t computeFamily;
-			bool graphicsFamilyExists;
-			bool computeFamilyExists;
+			uint32_t presentFamily;
+			bool graphicsFamilyExists = false;
+			bool computeFamilyExists = false;
+			bool presentFamilyExists = false;
 		};
-		static QueueFamilyIndices FindQueueFamilies(VkPhysicalDevice device);
+		QueueFamilyIndices FindQueueFamilies(VkPhysicalDevice device);
 		static std::vector<const char*> GetRequiredExtensions();
-		static bool IsDeviceSuitable(VkPhysicalDevice device);
+		bool IsDeviceSuitable(VkPhysicalDevice device);
 
 		bool CheckValidationLayerSupport() const;
 		void SetupDebugMessenger();
 		void ChooseVulkanDevice();
 		void CreateLogicalDevice();
+		void CreateSurface();
 		void InitializeVulkan();
 		void CleanupVulkan();
 
@@ -64,6 +67,8 @@ namespace Iceberg {
 		VkPhysicalDevice physicalDevice;
 		VkDevice device;
 		VkQueue graphicsQueue;
+		VkQueue presentQueue;
+		VkSurfaceKHR surface;
 
 	public:
 		static const Window* GetWindow();

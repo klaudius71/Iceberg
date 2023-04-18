@@ -9,6 +9,7 @@
 #include <cstdio>
 #include <chrono>
 #include <vector>
+#include <algorithm>
 
 #include "vulkan/vulkan.h"
 #include "GLFW/glfw3.h"
