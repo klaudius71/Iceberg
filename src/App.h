@@ -30,6 +30,14 @@ namespace Iceberg {
 		static VkResult CreateDebugUtilsMessengerEXT(VkInstance inst, const VkDebugUtilsMessengerCreateInfoEXT* pCreateInfo, const VkAllocationCallbacks* pAllocator, VkDebugUtilsMessengerEXT* pDebugMessenger);
 		static void DestroyDebugUtilsMessengerEXT(VkInstance inst, VkDebugUtilsMessengerEXT debugMessenger, const VkAllocationCallbacks* pAllocator);
 		
+		struct QueueFamilyIndices
+		{
+			uint32_t graphicsFamily;
+			uint32_t computeFamily;
+			bool graphicsFamilyExists;
+			bool computeFamilyExists;
+		};
+		static QueueFamilyIndices FindQueueFamilies(VkPhysicalDevice device);
 		static std::vector<const char*> GetRequiredExtensions();
 		static bool IsDeviceSuitable(VkPhysicalDevice device);
 
