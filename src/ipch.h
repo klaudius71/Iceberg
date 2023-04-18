@@ -14,13 +14,13 @@
 #include "GLFW/glfw3.h"
 #include "GLFW/glfw3native.h"
 
-//#define GLM_FORCE_DEFAULT_ALIGNED_GENTYPES
-//#define GLM_FORCE_INTRINSICS
-//#define GLM_FORCE_SSE42
-//#define GLM_FORCE_INLINE
-//#define GLM_ENABLE_EXPERIMENTAL // glm::length2() is experimental for some reason
-//#include "glm/glm.hpp"
-//#include "glm/ext.hpp"
+#define GLM_FORCE_DEFAULT_ALIGNED_GENTYPES
+#define GLM_FORCE_INTRINSICS
+#define GLM_FORCE_SSE42
+#define GLM_FORCE_INLINE
+#define GLM_ENABLE_EXPERIMENTAL // glm::length2() is experimental for some reason
+#include "glm.hpp"
+#include "ext.hpp"
 
 //#include "imgui.h"
 //#include "backends/imgui_impl_glfw.h"
