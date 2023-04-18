@@ -40,6 +40,7 @@ namespace Iceberg {
 		CreateImageViews();
 		CreateRenderPass();
 		CreateGraphicsPipeline();
+		CreateFramebuffers();
 	}
 	VK::~VK()
 	{
@@ -345,6 +346,57 @@ namespace Iceberg {
 			throw std::exception("Failed to set up debug messenger!");
 	}
 	
+	void VK::InitializeVulkan()
+	{
+		if (ENABLE_VALIDATION_LAYERS && !CheckValidationLayerSupport())
+			throw std::exception("Validation layers requested, but not available!");
+
+		VkApplicationInfo appInfo{};
+		appInfo.sType = VK_STRUCTURE_TYPE_APPLICATION_INFO;
+		appInfo.pApplicationName = "Iceberg";
+		appInfo.applicationVersion = VK_MAKE_API_VERSION(1, 0, 0, 1);
+		appInfo.pEngineName = "No Engine";
+		appInfo.engineVersion = VK_MAKE_API_VERSION(1, 0, 0, 0);
+		appInfo.apiVersion = VK_API_VERSION_1_0;
+
+		VkInstanceCreateInfo createInfo{};
+		createInfo.sType = VK_STRUCTURE_TYPE_INSTANCE_CREATE_INFO;
+		createInfo.pApplicationInfo = &appInfo;
+
+		VkDebugUtilsMessengerCreateInfoEXT debugCreateInfo{};
+		if (ENABLE_VALIDATION_LAYERS)
+		{
+			createInfo.enabledLayerCount = 1;
+			createInfo.ppEnabledLayerNames = validationLayers;
+
+			debugCreateInfo.sType = VK_STRUCTURE_TYPE_DEBUG_UTILS_MESSENGER_CREATE_INFO_EXT;
+			debugCreateInfo.messageSeverity = VK_DEBUG_UTILS_MESSAGE_SEVERITY_VERBOSE_BIT_EXT | VK_DEBUG_UTILS_MESSAGE_SEVERITY_WARNING_BIT_EXT | VK_DEBUG_UTILS_MESSAGE_SEVERITY_ERROR_BIT_EXT;
+			debugCreateInfo.messageType = VK_DEBUG_UTILS_MESSAGE_TYPE_GENERAL_BIT_EXT | VK_DEBUG_UTILS_MESSAGE_TYPE_VALIDATION_BIT_EXT | VK_DEBUG_UTILS_MESSAGE_TYPE_PERFORMANCE_BIT_EXT;
+			debugCreateInfo.pfnUserCallback = debugCallback;
+			createInfo.pNext = &debugCreateInfo;
+		}
+		else
+		{
+			createInfo.enabledLayerCount = 0;
+			createInfo.pNext = nullptr;
+		}
+
+		std::vector<const char*> glfwExtensions = GetRequiredExtensions();
+		createInfo.enabledExtensionCount = (uint32_t)glfwExtensions.size();
+		createInfo.ppEnabledExtensionNames = glfwExtensions.data();
+		VkResult result = vkCreateInstance(&createInfo, nullptr, &vkInstance);
+		if (result != VK_SUCCESS)
+			throw std::exception("Failed to create a Vulkan instance!");
+
+		uint32_t extensionCount = 0;
+		vkEnumerateInstanceExtensionProperties(nullptr, &extensionCount, nullptr);
+		std::vector<VkExtensionProperties> extensions(extensionCount);
+		vkEnumerateInstanceExtensionProperties(nullptr, &extensionCount, extensions.data());
+		printf("Available Vulkan extensions:\n");
+		for (uint32_t i = 0; i < extensionCount; i++)
+			printf("\t%s\n", extensions[i].extensionName);
+	}
+
 	void VK::ChooseVulkanDevice()
 	{
 		uint32_t deviceCount = 0;
@@ -627,58 +679,35 @@ namespace Iceberg {
 		vkDestroyShaderModule(device, fragShaderModule, nullptr);
 	}
 
-	void VK::InitializeVulkan()
+	void VK::CreateFramebuffers()
 	{
-		if (ENABLE_VALIDATION_LAYERS && !CheckValidationLayerSupport())
-			throw std::exception("Validation layers requested, but not available!");
-
-		VkApplicationInfo appInfo{};
-		appInfo.sType = VK_STRUCTURE_TYPE_APPLICATION_INFO;
-		appInfo.pApplicationName = "Iceberg";
-		appInfo.applicationVersion = VK_MAKE_API_VERSION(1, 0, 0, 1);
-		appInfo.pEngineName = "No Engine";
-		appInfo.engineVersion = VK_MAKE_API_VERSION(1, 0, 0, 0);
-		appInfo.apiVersion = VK_API_VERSION_1_0;
-
-		VkInstanceCreateInfo createInfo{};
-		createInfo.sType = VK_STRUCTURE_TYPE_INSTANCE_CREATE_INFO;
-		createInfo.pApplicationInfo = &appInfo;
-
-		VkDebugUtilsMessengerCreateInfoEXT debugCreateInfo{};
-		if (ENABLE_VALIDATION_LAYERS)
+		swapChainFramebuffers.resize(swapChainImageViews.size());
+	
+		VkResult res;
+		for (size_t i = 0; i < swapChainImageViews.size(); i++) 
 		{
-			createInfo.enabledLayerCount = 1;
-			createInfo.ppEnabledLayerNames = validationLayers;
+			VkImageView attachments[] = { swapChainImageViews[i] };
 
-			debugCreateInfo.sType = VK_STRUCTURE_TYPE_DEBUG_UTILS_MESSENGER_CREATE_INFO_EXT;
-			debugCreateInfo.messageSeverity = VK_DEBUG_UTILS_MESSAGE_SEVERITY_VERBOSE_BIT_EXT | VK_DEBUG_UTILS_MESSAGE_SEVERITY_WARNING_BIT_EXT | VK_DEBUG_UTILS_MESSAGE_SEVERITY_ERROR_BIT_EXT;
-			debugCreateInfo.messageType = VK_DEBUG_UTILS_MESSAGE_TYPE_GENERAL_BIT_EXT | VK_DEBUG_UTILS_MESSAGE_TYPE_VALIDATION_BIT_EXT | VK_DEBUG_UTILS_MESSAGE_TYPE_PERFORMANCE_BIT_EXT;
-			debugCreateInfo.pfnUserCallback = debugCallback;
-			createInfo.pNext = &debugCreateInfo;
+			VkFramebufferCreateInfo framebufferInfo{};
+			framebufferInfo.sType = VK_STRUCTURE_TYPE_FRAMEBUFFER_CREATE_INFO;
+			framebufferInfo.renderPass = renderPass;
+			framebufferInfo.attachmentCount = 1;
+			framebufferInfo.pAttachments = attachments;
+			framebufferInfo.width = swapChainExtent.width;
+			framebufferInfo.height = swapChainExtent.height;
+			framebufferInfo.layers = 1;
+
+			res = vkCreateFramebuffer(device, &framebufferInfo, nullptr, &swapChainFramebuffers[i]);
+			if(res != VK_SUCCESS)
+				throw std::runtime_error("failed to create framebuffer!");
 		}
-		else
-		{
-			createInfo.enabledLayerCount = 0;
-			createInfo.pNext = nullptr;
-		}
-
-		std::vector<const char*> glfwExtensions = GetRequiredExtensions();
-		createInfo.enabledExtensionCount = (uint32_t)glfwExtensions.size();
-		createInfo.ppEnabledExtensionNames = glfwExtensions.data();
-		VkResult result = vkCreateInstance(&createInfo, nullptr, &vkInstance);
-		if (result != VK_SUCCESS)
-			throw std::exception("Failed to create a Vulkan instance!");
-
-		uint32_t extensionCount = 0;
-		vkEnumerateInstanceExtensionProperties(nullptr, &extensionCount, nullptr);
-		std::vector<VkExtensionProperties> extensions(extensionCount);
-		vkEnumerateInstanceExtensionProperties(nullptr, &extensionCount, extensions.data());
-		printf("Available Vulkan extensions:\n");
-		for (uint32_t i = 0; i < extensionCount; i++)
-			printf("\t%s\n", extensions[i].extensionName);		
 	}
+
 	void VK::CleanupVulkan()
 	{
+		for (auto framebuffer : swapChainFramebuffers)
+			vkDestroyFramebuffer(device, framebuffer, nullptr);
+
 		vkDestroyPipeline(device, graphicsPipeline, nullptr);
 		vkDestroyPipelineLayout(device, pipelineLayout, nullptr);
 		vkDestroyRenderPass(device, renderPass, nullptr);

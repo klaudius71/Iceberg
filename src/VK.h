@@ -66,6 +66,8 @@ namespace Iceberg {
 		bool CheckDeviceExtensionSupport(VkPhysicalDevice dev) const;
 		void SetupDebugMessenger();
 
+		void InitializeVulkan();
+
 		void ChooseVulkanDevice();
 		void CreateLogicalDevice();
 
@@ -75,7 +77,8 @@ namespace Iceberg {
 		void CreateRenderPass();
 		void CreateGraphicsPipeline();
 
-		void InitializeVulkan();
+		void CreateFramebuffers();
+
 		void CleanupVulkan();
 
 		static const char* const validationLayers[];
@@ -98,6 +101,8 @@ namespace Iceberg {
 		VkRenderPass renderPass;
 		VkPipelineLayout pipelineLayout;
 		VkPipeline graphicsPipeline;
+
+		std::vector<VkFramebuffer> swapChainFramebuffers;
 
 	public:
 		static void Initialize();
