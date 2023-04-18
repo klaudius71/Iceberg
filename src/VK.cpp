@@ -38,6 +38,7 @@ namespace Iceberg {
 		CreateLogicalDevice();
 		CreateSwapChain();
 		CreateImageViews();
+		CreateGraphicsPipeline();
 	}
 	VK::~VK()
 	{
@@ -65,6 +66,19 @@ namespace Iceberg {
 		static auto func = (PFN_vkDestroyDebugUtilsMessengerEXT)vkGetInstanceProcAddr(inst, "vkDestroyDebugUtilsMessengerEXT");
 		if (func != nullptr)
 			func(inst, debugMessenger, pAllocator);
+	}
+	std::vector<uint8_t> VK::ReadBinaryFile(const std::string& filename)
+	{
+		std::ifstream file(filename, std::ios::ate | std::ios::binary);
+		if(!file.is_open())
+			throw std::exception(("Could not open file " + filename).c_str());
+
+		size_t file_size = (size_t)file.tellg();
+		std::vector<uint8_t> buffer(file_size);
+		file.seekg(0);
+		file.read((char*)buffer.data(), file_size);
+		file.close();
+		return buffer;
 	}
 
 	VK::QueueFamilyIndices VK::FindQueueFamilies(VkPhysicalDevice dev)
@@ -329,6 +343,7 @@ namespace Iceberg {
 		if (res != VK_SUCCESS)
 			throw std::exception("Failed to set up debug messenger!");
 	}
+	
 	void VK::ChooseVulkanDevice()
 	{
 		uint32_t deviceCount = 0;
@@ -403,12 +418,54 @@ namespace Iceberg {
 		vkGetDeviceQueue(device, indices.graphicsFamily, 0, &graphicsQueue);
 		vkGetDeviceQueue(device, indices.presentFamily, 0, &presentQueue);
 	}
+	
 	void VK::CreateSurface()
 	{
 		VkResult res = glfwCreateWindowSurface(vkInstance, App::GetWindow()->GetGLFWWindow(), nullptr, &surface);
 		if (res != VK_SUCCESS)
 			throw std::exception("Failed to create window surface!");
 	}
+
+	VkShaderModule VK::CreateShaderModule(const std::vector<uint8_t>& code)
+	{
+		VkShaderModuleCreateInfo createInfo{};
+		createInfo.sType = VK_STRUCTURE_TYPE_SHADER_MODULE_CREATE_INFO;
+		createInfo.codeSize = code.size();
+		createInfo.pCode = (uint32_t*)code.data();
+
+		VkShaderModule shaderModule;
+		VkResult res = vkCreateShaderModule(device, &createInfo, nullptr, &shaderModule);
+		if (res != VK_SUCCESS)
+			throw std::exception("Failed to create shader module!");
+
+		return shaderModule;
+	}
+	void VK::CreateGraphicsPipeline()
+	{
+		auto vertShaderCode = ReadBinaryFile("assets/shaders/vert.spv");
+		auto fragShaderCode = ReadBinaryFile("assets/shaders/frag.spv");
+
+		VkShaderModule vertShaderModule = CreateShaderModule(vertShaderCode);
+		VkShaderModule fragShaderModule = CreateShaderModule(fragShaderCode);
+
+		VkPipelineShaderStageCreateInfo vertShaderStageInfo{};
+		vertShaderStageInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO;
+		vertShaderStageInfo.stage = VK_SHADER_STAGE_VERTEX_BIT;
+		vertShaderStageInfo.module = vertShaderModule;
+		vertShaderStageInfo.pName = "main";
+
+		VkPipelineShaderStageCreateInfo fragShaderStageInfo{};
+		fragShaderStageInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO;
+		fragShaderStageInfo.stage = VK_SHADER_STAGE_FRAGMENT_BIT;
+		fragShaderStageInfo.module = fragShaderModule;
+		fragShaderStageInfo.pName = "main";
+
+		VkPipelineShaderStageCreateInfo shaderStages[] = { vertShaderStageInfo, fragShaderStageInfo };
+
+		vkDestroyShaderModule(device, vertShaderModule, nullptr);
+		vkDestroyShaderModule(device, fragShaderModule, nullptr);
+	}
+
 	void VK::InitializeVulkan()
 	{
 		if (ENABLE_VALIDATION_LAYERS && !CheckValidationLayerSupport())

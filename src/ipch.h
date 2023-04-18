@@ -12,6 +12,7 @@
 #include <set>
 #include <algorithm>
 #include <cstdint>
+#include <fstream>
 
 #include "vulkan/vulkan.h"
 #include "GLFW/glfw3.h"

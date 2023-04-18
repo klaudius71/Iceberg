@@ -32,6 +32,7 @@ namespace Iceberg {
 			void* pUserData);
 		static VkResult CreateDebugUtilsMessengerEXT(VkInstance inst, const VkDebugUtilsMessengerCreateInfoEXT* pCreateInfo, const VkAllocationCallbacks* pAllocator, VkDebugUtilsMessengerEXT* pDebugMessenger);
 		static void DestroyDebugUtilsMessengerEXT(VkInstance inst, VkDebugUtilsMessengerEXT debugMessenger, const VkAllocationCallbacks* pAllocator);
+		static std::vector<uint8_t> ReadBinaryFile(const std::string& filename);
 
 		struct QueueFamilyIndices
 		{
@@ -64,9 +65,15 @@ namespace Iceberg {
 		bool CheckValidationLayerSupport() const;
 		bool CheckDeviceExtensionSupport(VkPhysicalDevice dev) const;
 		void SetupDebugMessenger();
+
 		void ChooseVulkanDevice();
 		void CreateLogicalDevice();
+
 		void CreateSurface();
+
+		VkShaderModule CreateShaderModule(const std::vector<uint8_t>& code);
+		void CreateGraphicsPipeline();
+
 		void InitializeVulkan();
 		void CleanupVulkan();
 
