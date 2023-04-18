@@ -56,6 +56,7 @@ namespace Iceberg {
 		VkPresentModeKHR ChooseSwapPresentMode(const std::vector<VkPresentModeKHR>& availablePresentModes);
 		VkExtent2D ChooseSwapExtent(const VkSurfaceCapabilitiesKHR& capabilities);
 		void CreateSwapChain();
+		void CreateImageViews();
 
 		static std::vector<const char*> GetRequiredExtensions();
 		bool IsDeviceSuitable(VkPhysicalDevice device);
@@ -84,6 +85,7 @@ namespace Iceberg {
 		std::vector<VkImage> swapChainImages;
 		VkFormat swapChainImageFormat;
 		VkExtent2D swapChainExtent;
+		std::vector<VkImageView> swapChainImageViews;
 
 	public:
 		static void Initialize();
