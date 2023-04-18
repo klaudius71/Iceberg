@@ -5,6 +5,10 @@
 namespace Iceberg {
 
 	App* App::instance = nullptr;
+	const char* const App::validationLayers[] =
+	{
+		"VK_LAYER_KHRONOS_validation"
+	};
 
 	App::App(const int window_width, const int window_height, const char* const icon_path)
 	{
@@ -12,11 +16,141 @@ namespace Iceberg {
 		instance = this;
 
 		window = new Window(window_width, window_height, icon_path);
+		InitializeVulkan();
 	}
 	App::~App()
 	{
+		CleanupVulkan();
 		delete window;
 	}
+
+	VKAPI_ATTR VkBool32 VKAPI_CALL App::debugCallback(VkDebugUtilsMessageSeverityFlagBitsEXT messageSeverity, VkDebugUtilsMessageTypeFlagsEXT, 	const VkDebugUtilsMessengerCallbackDataEXT* pCallbackData, void*)
+	{
+		if(messageSeverity >= VK_DEBUG_UTILS_MESSAGE_SEVERITY_WARNING_BIT_EXT)
+			printf("validation layer: %s\n", pCallbackData->pMessage);
+
+		return VK_FALSE;
+	}
+	VkResult App::CreateDebugUtilsMessengerEXT(VkInstance inst, const VkDebugUtilsMessengerCreateInfoEXT* pCreateInfo, const VkAllocationCallbacks* pAllocator, VkDebugUtilsMessengerEXT* pDebugMessenger)
+	{
+		static auto func = (PFN_vkCreateDebugUtilsMessengerEXT)vkGetInstanceProcAddr(inst, "vkCreateDebugUtilsMessengerEXT");
+		if (func != nullptr) 
+			return func(inst, pCreateInfo, pAllocator, pDebugMessenger);
+		else 
+			return VK_ERROR_EXTENSION_NOT_PRESENT;
+	}
+	void App::DestroyDebugUtilsMessengerEXT(VkInstance inst, VkDebugUtilsMessengerEXT debugMessenger, const VkAllocationCallbacks* pAllocator)
+	{
+		static auto func = (PFN_vkDestroyDebugUtilsMessengerEXT)vkGetInstanceProcAddr(inst, "vkDestroyDebugUtilsMessengerEXT");
+		if (func != nullptr)
+			func(inst, debugMessenger, pAllocator);
+	}
+
+	std::vector<const char*> App::GetRequiredExtensions()
+	{
+		uint32_t glfwExtensionCount = 0;
+		const char** glfwExtensions;
+		glfwExtensions = glfwGetRequiredInstanceExtensions(&glfwExtensionCount);
+	
+		std::vector<const char*> extensions(glfwExtensions, glfwExtensions + glfwExtensionCount);
+	
+		if (ENABLE_VALIDATION_LAYERS)
+			extensions.push_back(VK_EXT_DEBUG_UTILS_EXTENSION_NAME);
+	
+		return extensions;
+	}
+
+	bool App::CheckValidationLayerSupport() const
+	{
+		uint32_t layerCount;
+		vkEnumerateInstanceLayerProperties(&layerCount, nullptr);
+		std::vector<VkLayerProperties> availableLayers(layerCount);
+		vkEnumerateInstanceLayerProperties(&layerCount, availableLayers.data());
+
+		for(const auto& layerName : validationLayers)
+			for (const auto& layerProperties : availableLayers)
+				if (strcmp(layerName, layerProperties.layerName) == 0)
+					return true;
+
+		return false;
+	}
+	void App::SetupDebugMessenger()
+	{
+		if (!ENABLE_VALIDATION_LAYERS)
+			return;
+
+		VkDebugUtilsMessengerCreateInfoEXT createInfo{};
+		createInfo.sType = VK_STRUCTURE_TYPE_DEBUG_UTILS_MESSENGER_CREATE_INFO_EXT;
+		createInfo.messageSeverity = VK_DEBUG_UTILS_MESSAGE_SEVERITY_VERBOSE_BIT_EXT | VK_DEBUG_UTILS_MESSAGE_SEVERITY_WARNING_BIT_EXT | VK_DEBUG_UTILS_MESSAGE_SEVERITY_ERROR_BIT_EXT;
+		createInfo.messageType = VK_DEBUG_UTILS_MESSAGE_TYPE_GENERAL_BIT_EXT | VK_DEBUG_UTILS_MESSAGE_TYPE_VALIDATION_BIT_EXT | VK_DEBUG_UTILS_MESSAGE_TYPE_PERFORMANCE_BIT_EXT;
+		createInfo.pfnUserCallback = debugCallback;
+		createInfo.pUserData = nullptr;
+
+		VkResult res = CreateDebugUtilsMessengerEXT(vulkanInstance, &createInfo, nullptr, &debugMessenger);
+		if (res != VK_SUCCESS)
+			throw std::exception("Failed to set up debug messenger!");
+	}
+	void App::InitializeVulkan()
+	{
+		if (ENABLE_VALIDATION_LAYERS && !CheckValidationLayerSupport())
+			throw std::exception("Validation layers requested, but not available!");
+
+		VkApplicationInfo appInfo{};
+		appInfo.sType = VK_STRUCTURE_TYPE_APPLICATION_INFO;
+		appInfo.pApplicationName = "Iceberg";
+		appInfo.applicationVersion = VK_MAKE_API_VERSION(1, 0, 0, 1);
+		appInfo.pEngineName = "No Engine";
+		appInfo.engineVersion = VK_MAKE_API_VERSION(1, 0, 0, 0);
+		appInfo.apiVersion = VK_API_VERSION_1_0;
+
+		VkInstanceCreateInfo createInfo{};
+		createInfo.sType = VK_STRUCTURE_TYPE_INSTANCE_CREATE_INFO;
+		createInfo.pApplicationInfo = &appInfo;
+
+
+		VkDebugUtilsMessengerCreateInfoEXT debugCreateInfo{};
+		if (ENABLE_VALIDATION_LAYERS)
+		{
+			createInfo.enabledLayerCount = 1;
+			createInfo.ppEnabledLayerNames = validationLayers;
+
+			debugCreateInfo.sType = VK_STRUCTURE_TYPE_DEBUG_UTILS_MESSENGER_CREATE_INFO_EXT;
+			debugCreateInfo.messageSeverity = VK_DEBUG_UTILS_MESSAGE_SEVERITY_VERBOSE_BIT_EXT | VK_DEBUG_UTILS_MESSAGE_SEVERITY_WARNING_BIT_EXT | VK_DEBUG_UTILS_MESSAGE_SEVERITY_ERROR_BIT_EXT;
+			debugCreateInfo.messageType = VK_DEBUG_UTILS_MESSAGE_TYPE_GENERAL_BIT_EXT | VK_DEBUG_UTILS_MESSAGE_TYPE_VALIDATION_BIT_EXT | VK_DEBUG_UTILS_MESSAGE_TYPE_PERFORMANCE_BIT_EXT;
+			debugCreateInfo.pfnUserCallback = debugCallback;
+			createInfo.pNext = &debugCreateInfo;
+		}
+		else
+		{
+			createInfo.enabledLayerCount = 0;
+			createInfo.pNext = nullptr;
+		}
+
+		std::vector<const char*> glfwExtensions = GetRequiredExtensions();
+		createInfo.enabledExtensionCount = (uint32_t)glfwExtensions.size();
+		createInfo.ppEnabledExtensionNames = glfwExtensions.data();
+		VkResult result = vkCreateInstance(&createInfo, nullptr, &vulkanInstance);
+		if (result != VK_SUCCESS)
+			throw std::exception("Failed to create a Vulkan instance!");
+
+		uint32_t extensionCount = 0;
+		vkEnumerateInstanceExtensionProperties(nullptr, &extensionCount, nullptr);
+		std::vector<VkExtensionProperties> extensions(extensionCount);
+		vkEnumerateInstanceExtensionProperties(nullptr, &extensionCount, extensions.data());
+		printf("Available Vulkan extensions:\n");
+		for (uint32_t i = 0; i < extensionCount; i++)
+			printf("\t%s\n", extensions[i].extensionName);
+
+		SetupDebugMessenger();
+	}
+	void App::CleanupVulkan()
+	{
+		if (ENABLE_VALIDATION_LAYERS)
+			DestroyDebugUtilsMessengerEXT(vulkanInstance, debugMessenger, nullptr);
+
+		vkDestroyInstance(vulkanInstance, nullptr);
+	}
+
 
 	void App::Run()
 	{
@@ -58,7 +192,7 @@ namespace Iceberg {
 			
 			Update();
 
-			ImGui::Render();
+			//ImGui::Render();
 			//ImGui_ImplVulkan_RenderDrawData(ImGui::GetDrawData(), , nullptr);
 		}
 
