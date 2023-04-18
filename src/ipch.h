@@ -11,6 +11,7 @@
 #include <vector>
 #include <set>
 #include <algorithm>
+#include <cstdint>
 
 #include "vulkan/vulkan.h"
 #include "GLFW/glfw3.h"

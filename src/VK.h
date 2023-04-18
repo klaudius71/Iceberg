@@ -43,6 +43,20 @@ namespace Iceberg {
 			bool presentFamilyExists = false;
 		};
 		QueueFamilyIndices FindQueueFamilies(VkPhysicalDevice device);
+
+		// Swapchain
+		struct SwapChainSupportDetails
+		{
+			VkSurfaceCapabilitiesKHR capabilities;
+			std::vector<VkSurfaceFormatKHR> formats;
+			std::vector<VkPresentModeKHR> presentModes;
+		};
+		SwapChainSupportDetails QuerySwapChainSupport(VkPhysicalDevice dev);
+		VkSurfaceFormatKHR ChooseSwapSurfaceFormat(const std::vector<VkSurfaceFormatKHR>& availableFormats);
+		VkPresentModeKHR ChooseSwapPresentMode(const std::vector<VkPresentModeKHR>& availablePresentModes);
+		VkExtent2D ChooseSwapExtent(const VkSurfaceCapabilitiesKHR& capabilities);
+		void CreateSwapChain();
+
 		static std::vector<const char*> GetRequiredExtensions();
 		bool IsDeviceSuitable(VkPhysicalDevice device);
 
@@ -65,6 +79,7 @@ namespace Iceberg {
 		VkQueue graphicsQueue;
 		VkQueue presentQueue;
 		VkSurfaceKHR surface;
+		VkSwapchainKHR swapChain;
 
 	public:
 		static void Initialize();
