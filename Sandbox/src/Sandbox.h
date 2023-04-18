@@ -13,7 +13,9 @@ public:
 	Sandbox& operator=(Sandbox&&) = delete;
 	~Sandbox() = default;
 
+	virtual void Start() override;
 	virtual void Update() override;
+	virtual void End() override;
 };
 
 #endif // !_SANDBOX

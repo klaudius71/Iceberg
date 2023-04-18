@@ -20,11 +20,15 @@ namespace Iceberg {
 
 	void App::Run()
 	{
+		Start();
+
 		while (!window->IsOpen())
 		{
 			window->PollEvents();
 			Update();
 		}
+
+		End();
 	}
 
 	const Window* App::GetWindow()

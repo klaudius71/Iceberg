@@ -1,7 +1,7 @@
 #pragma once
 
 #if _WIN32
-#include <Windows.h>
+#include <windows.h>
 #define GLFW_EXPOSE_NATIVE_WIN32
 #endif
 
