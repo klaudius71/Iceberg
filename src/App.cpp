@@ -59,9 +59,15 @@ namespace Iceberg {
 		for (uint32_t i = 0; i < queueFamilyCount; i++)
 		{
 			if (queueFamilies[i].queueFlags & VK_QUEUE_GRAPHICS_BIT)
+			{
+				indices.graphicsFamily = i;
 				indices.graphicsFamilyExists = true;
-			else if (queueFamilies[i].queueFlags & VK_QUEUE_COMPUTE_BIT)
+			}
+			if (queueFamilies[i].queueFlags & VK_QUEUE_COMPUTE_BIT)
+			{
 				indices.computeFamilyExists = true;
+				indices.computeFamily = i;
+			}
 		}
 
 		return indices;
@@ -151,6 +157,42 @@ namespace Iceberg {
 		if (physicalDevice == VK_NULL_HANDLE)
 			throw std::exception("Failed to find suitable GPU!");
 	}
+	void App::CreateLogicalDevice()
+	{
+		QueueFamilyIndices indices = FindQueueFamilies(physicalDevice);
+
+		VkDeviceQueueCreateInfo queueCreateInfo{};
+		queueCreateInfo.sType = VK_STRUCTURE_TYPE_DEVICE_QUEUE_CREATE_INFO;
+		queueCreateInfo.queueFamilyIndex = indices.graphicsFamily;
+		queueCreateInfo.queueCount = 1;
+		float queuePriority = 1.0f;
+		queueCreateInfo.pQueuePriorities = &queuePriority;
+
+		VkPhysicalDeviceFeatures deviceFeatures{};
+		
+		VkDeviceCreateInfo createInfo{};
+		createInfo.sType = VK_STRUCTURE_TYPE_DEVICE_CREATE_INFO;
+		createInfo.pQueueCreateInfos = &queueCreateInfo;
+		createInfo.queueCreateInfoCount = 1;
+		createInfo.pEnabledFeatures = &deviceFeatures;
+
+		createInfo.enabledExtensionCount = 0;
+		if (ENABLE_VALIDATION_LAYERS)
+		{
+			createInfo.enabledLayerCount = 1;
+			createInfo.ppEnabledLayerNames = validationLayers;
+		}
+		else
+		{
+			createInfo.enabledLayerCount = 0;
+		}
+
+		VkResult res = vkCreateDevice(physicalDevice, &createInfo, nullptr, &device);
+		if (res != VK_SUCCESS)
+			throw std::exception("Failed to create logical device!");
+
+		vkGetDeviceQueue(device, indices.graphicsFamily, 0, &graphicsQueue);
+	}
 	void App::InitializeVulkan()
 	{
 		if (ENABLE_VALIDATION_LAYERS && !CheckValidationLayerSupport())
@@ -204,9 +246,12 @@ namespace Iceberg {
 
 		SetupDebugMessenger();
 		ChooseVulkanDevice();
+		CreateLogicalDevice();
 	}
 	void App::CleanupVulkan()
 	{
+		vkDestroyDevice(device, nullptr);
+
 		if (ENABLE_VALIDATION_LAYERS)
 			DestroyDebugUtilsMessengerEXT(vulkanInstance, debugMessenger, nullptr);
 

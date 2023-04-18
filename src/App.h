@@ -44,6 +44,7 @@ namespace Iceberg {
 		bool CheckValidationLayerSupport() const;
 		void SetupDebugMessenger();
 		void ChooseVulkanDevice();
+		void CreateLogicalDevice();
 		void InitializeVulkan();
 		void CleanupVulkan();
 
@@ -61,6 +62,8 @@ namespace Iceberg {
 		VkInstance vulkanInstance;
 		VkDebugUtilsMessengerEXT debugMessenger;
 		VkPhysicalDevice physicalDevice;
+		VkDevice device;
+		VkQueue graphicsQueue;
 
 	public:
 		static const Window* GetWindow();
