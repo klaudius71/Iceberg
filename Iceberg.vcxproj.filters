@@ -57,6 +57,9 @@
     <ClCompile Include="external\imgui\backends\imgui_impl_vulkan.cpp">
       <Filter>Libraries\imgui\backends</Filter>
     </ClCompile>
+    <ClCompile Include="src\VK.cpp">
+      <Filter>Source Files\GraphicsContext</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="src\App.h">
@@ -85,6 +88,9 @@
     </ClInclude>
     <ClInclude Include="external\imgui\backends\imgui_impl_vulkan.h">
       <Filter>Libraries\imgui\backends</Filter>
+    </ClInclude>
+    <ClInclude Include="src\VK.h">
+      <Filter>Source Files\GraphicsContext</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>
