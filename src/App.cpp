@@ -11,6 +11,7 @@ namespace Iceberg {
 	};
 
 	App::App(const int window_width, const int window_height, const char* const icon_path)
+		: window(nullptr), physicalDevice(VK_NULL_HANDLE)
 	{
 		assert(instance == nullptr);
 		instance = this;
@@ -59,6 +60,16 @@ namespace Iceberg {
 	
 		return extensions;
 	}
+	bool App::IsDeviceSuitable(VkPhysicalDevice device)
+	{
+		VkPhysicalDeviceProperties deviceProperties;
+		VkPhysicalDeviceFeatures deviceFeatures;
+		vkGetPhysicalDeviceProperties(device, &deviceProperties);
+		vkGetPhysicalDeviceFeatures(device, &deviceFeatures);
+
+		return deviceProperties.deviceType == VK_PHYSICAL_DEVICE_TYPE_DISCRETE_GPU &&
+			deviceFeatures.geometryShader;
+	}
 
 	bool App::CheckValidationLayerSupport() const
 	{
@@ -89,6 +100,33 @@ namespace Iceberg {
 		VkResult res = CreateDebugUtilsMessengerEXT(vulkanInstance, &createInfo, nullptr, &debugMessenger);
 		if (res != VK_SUCCESS)
 			throw std::exception("Failed to set up debug messenger!");
+	}
+	void App::ChooseVulkanDevice()
+	{
+		uint32_t deviceCount = 0;
+		vkEnumeratePhysicalDevices(vulkanInstance, &deviceCount, nullptr);
+		if (deviceCount <= 0)
+			throw std::exception("Could not find GPUs that support Vulkan!");
+
+		std::vector<VkPhysicalDevice> devices(deviceCount);
+		vkEnumeratePhysicalDevices(vulkanInstance, &deviceCount, devices.data());
+
+		VkPhysicalDeviceProperties properties;
+		printf("\nSupported GPUs:\n");
+		for (const auto device : devices)
+		{
+			vkGetPhysicalDeviceProperties(device, &properties);
+			printf("\t%s", properties.deviceName);
+			if (physicalDevice == VK_NULL_HANDLE && IsDeviceSuitable(device))
+			{
+				printf(" << selected");
+				physicalDevice = device;
+			}
+			printf("\n");
+		}
+		
+		if (physicalDevice == VK_NULL_HANDLE)
+			throw std::exception("Failed to find suitable GPU!");
 	}
 	void App::InitializeVulkan()
 	{
@@ -142,6 +180,7 @@ namespace Iceberg {
 			printf("\t%s\n", extensions[i].extensionName);
 
 		SetupDebugMessenger();
+		ChooseVulkanDevice();
 	}
 	void App::CleanupVulkan()
 	{

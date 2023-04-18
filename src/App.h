@@ -29,10 +29,13 @@ namespace Iceberg {
 			void* pUserData);
 		static VkResult CreateDebugUtilsMessengerEXT(VkInstance inst, const VkDebugUtilsMessengerCreateInfoEXT* pCreateInfo, const VkAllocationCallbacks* pAllocator, VkDebugUtilsMessengerEXT* pDebugMessenger);
 		static void DestroyDebugUtilsMessengerEXT(VkInstance inst, VkDebugUtilsMessengerEXT debugMessenger, const VkAllocationCallbacks* pAllocator);
-
+		
 		static std::vector<const char*> GetRequiredExtensions();
+		static bool IsDeviceSuitable(VkPhysicalDevice device);
+
 		bool CheckValidationLayerSupport() const;
 		void SetupDebugMessenger();
+		void ChooseVulkanDevice();
 		void InitializeVulkan();
 		void CleanupVulkan();
 
@@ -49,6 +52,7 @@ namespace Iceberg {
 		Window* window = nullptr;
 		VkInstance vulkanInstance;
 		VkDebugUtilsMessengerEXT debugMessenger;
+		VkPhysicalDevice physicalDevice;
 
 	public:
 		static const Window* GetWindow();
