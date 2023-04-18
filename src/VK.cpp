@@ -209,6 +209,14 @@ namespace Iceberg {
 		VkResult res = vkCreateSwapchainKHR(device, &createInfo, nullptr, &swapChain);
 		if (res != VK_SUCCESS)
 			throw std::exception("Failed to create a swap chain!");
+
+		uint32_t imageCount;
+		vkGetSwapchainImagesKHR(device, swapChain, &imageCount, nullptr);
+		swapChainImages.resize(imageCount);
+		vkGetSwapchainImagesKHR(device, swapChain, &imageCount, swapChainImages.data());
+
+		swapChainImageFormat = surfaceFormat.format;
+		swapChainExtent = extent;
 	}
 
 	std::vector<const char*> VK::GetRequiredExtensions()

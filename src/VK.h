@@ -79,7 +79,11 @@ namespace Iceberg {
 		VkQueue graphicsQueue;
 		VkQueue presentQueue;
 		VkSurfaceKHR surface;
+
 		VkSwapchainKHR swapChain;
+		std::vector<VkImage> swapChainImages;
+		VkFormat swapChainImageFormat;
+		VkExtent2D swapChainExtent;
 
 	public:
 		static void Initialize();
