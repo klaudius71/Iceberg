@@ -10,6 +10,8 @@
 #include "glm.hpp"
 #include "ext.hpp"
 
+#include "../external/imgui/imgui.h"
+
 #include "App.h"
 #include "Window.h"
 

@@ -22,11 +22,50 @@ namespace Iceberg {
 	{
 		Start();
 
+		// Setup Dear ImGui context
+		IMGUI_CHECKVERSION();
+		ImGui::CreateContext();
+		ImGuiIO& io = ImGui::GetIO(); (void)io;
+		io.ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard;       // Enable Keyboard Controls
+		io.ConfigFlags |= ImGuiConfigFlags_DockingEnable;           // Enable Docking
+		io.ConfigFlags |= ImGuiConfigFlags_ViewportsEnable;         // Enable Multi-Viewport / Platform Windows
+		//io.ConfigViewportsNoAutoMerge = true;
+		//io.ConfigViewportsNoTaskBarIcon = true;
+
+		// Setup Dear ImGui style
+		ImGui::StyleColorsDark();
+		//ImGui::StyleColorsLight();
+
+		ImGuiStyle& style = ImGui::GetStyle();
+		if (io.ConfigFlags & ImGuiConfigFlags_ViewportsEnable)
+		{
+			style.WindowRounding = 0.0f;
+			style.Colors[ImGuiCol_WindowBg].w = 1.0f;
+		}
+
+		// Setup Platform/Renderer backends
+		//ImGui_ImplGlfw_InitForVulkan(window->GetGLFWWindow(), true);
+		//ImGui_ImplVulkan_Init();
+
 		while (!window->IsOpen())
 		{
 			window->PollEvents();
+			
+			//ImGui_ImplGlfw_NewFrame();
+			//ImGui_ImplVulkan_NewFrame();
+			//ImGui::NewFrame();
+			//ImGui::DockSpaceOverViewport(ImGui::GetMainViewport());
+			
 			Update();
+
+			ImGui::Render();
+			//ImGui_ImplVulkan_RenderDrawData(ImGui::GetDrawData(), , nullptr);
 		}
+
+		// Cleanup
+		//ImGui_ImplVulkan_Shutdown();
+		//ImGui_ImplGlfw_Shutdown();
+		//ImGui::DestroyContext();
 
 		End();
 	}

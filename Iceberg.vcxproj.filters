@@ -16,6 +16,15 @@
     <Filter Include="Source Files\GraphicsContext">
       <UniqueIdentifier>{b12d7496-080b-4bda-88c8-2e823d8a8ba5}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Libraries">
+      <UniqueIdentifier>{ccb924ee-133f-4e16-8097-46e00dcdfa4c}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Libraries\imgui">
+      <UniqueIdentifier>{30c0bf67-298d-426d-bc7b-c0036fb3ac9d}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Libraries\imgui\backends">
+      <UniqueIdentifier>{b8e3de0c-a39e-49c1-b608-ca3d2c4731b0}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="src\App.cpp">
@@ -26,6 +35,27 @@
     </ClCompile>
     <ClCompile Include="src\Window.cpp">
       <Filter>Source Files\GraphicsContext</Filter>
+    </ClCompile>
+    <ClCompile Include="external\imgui\imgui.cpp">
+      <Filter>Libraries\imgui</Filter>
+    </ClCompile>
+    <ClCompile Include="external\imgui\imgui_demo.cpp">
+      <Filter>Libraries\imgui</Filter>
+    </ClCompile>
+    <ClCompile Include="external\imgui\imgui_draw.cpp">
+      <Filter>Libraries\imgui</Filter>
+    </ClCompile>
+    <ClCompile Include="external\imgui\imgui_tables.cpp">
+      <Filter>Libraries\imgui</Filter>
+    </ClCompile>
+    <ClCompile Include="external\imgui\imgui_widgets.cpp">
+      <Filter>Libraries\imgui</Filter>
+    </ClCompile>
+    <ClCompile Include="external\imgui\backends\imgui_impl_glfw.cpp">
+      <Filter>Libraries\imgui\backends</Filter>
+    </ClCompile>
+    <ClCompile Include="external\imgui\backends\imgui_impl_vulkan.cpp">
+      <Filter>Libraries\imgui\backends</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -43,6 +73,18 @@
     </ClInclude>
     <ClInclude Include="src\Window.h">
       <Filter>Source Files\GraphicsContext</Filter>
+    </ClInclude>
+    <ClInclude Include="external\imgui\imgui.h">
+      <Filter>Libraries\imgui</Filter>
+    </ClInclude>
+    <ClInclude Include="external\imgui\imgui_internal.h">
+      <Filter>Libraries\imgui</Filter>
+    </ClInclude>
+    <ClInclude Include="external\imgui\backends\imgui_impl_glfw.h">
+      <Filter>Libraries\imgui\backends</Filter>
+    </ClInclude>
+    <ClInclude Include="external\imgui\backends\imgui_impl_vulkan.h">
+      <Filter>Libraries\imgui\backends</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>
