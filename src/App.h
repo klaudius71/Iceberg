@@ -3,7 +3,11 @@
 
 #include "IcebergCore.h"
 
-#define ENABLE_VALIDATION_LAYERS _DEBUG
+#ifdef _DEBUG
+constexpr bool ENABLE_VALIDATION_LAYERS = true;
+#else
+constexpr bool ENABLE_VALIDATION_LAYERS = false;
+#endif
 
 namespace Iceberg {
 

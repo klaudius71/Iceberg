@@ -192,7 +192,7 @@ namespace Iceberg {
 		createInfo.pEnabledFeatures = &deviceFeatures;
 
 		createInfo.enabledExtensionCount = 0;
-		if (ENABLE_VALIDATION_LAYERS)
+		if constexpr (ENABLE_VALIDATION_LAYERS)
 		{
 			createInfo.enabledLayerCount = 1;
 			createInfo.ppEnabledLayerNames = validationLayers;
