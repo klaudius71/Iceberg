@@ -78,6 +78,9 @@ namespace Iceberg {
 		void CreateGraphicsPipeline();
 
 		void CreateFramebuffers();
+		void CreateCommandPool();
+		void CreateCommandBuffer();
+		void RecordCommandBuffer(VkCommandBuffer commandBuffer, uint32_t imageIndex);
 
 		void CleanupVulkan();
 
@@ -103,6 +106,8 @@ namespace Iceberg {
 		VkPipeline graphicsPipeline;
 
 		std::vector<VkFramebuffer> swapChainFramebuffers;
+		VkCommandPool commandPool;
+		VkCommandBuffer commandBuffer;
 
 	public:
 		static void Initialize();
