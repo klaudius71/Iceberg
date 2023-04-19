@@ -82,6 +82,11 @@ namespace Iceberg {
 		void CreateCommandBuffer();
 		void RecordCommandBuffer(VkCommandBuffer commandBuffer, uint32_t imageIndex);
 
+		void CreateSyncObjects();
+
+		void drawFrame();
+		void deviceWaitIdle();
+
 		void CleanupVulkan();
 
 		static const char* const validationLayers[];
@@ -109,9 +114,15 @@ namespace Iceberg {
 		VkCommandPool commandPool;
 		VkCommandBuffer commandBuffer;
 
+		VkSemaphore imageAvailableSemaphore;
+		VkSemaphore renderFinishedSemaphore;
+		VkFence inFlightFence;
+
 	public:
 		static void Initialize();
 		static VkInstance GetVkInstance();
+		static void DrawFrame() { Instance().drawFrame(); }
+		static void DeviceWaitIdle() { Instance().deviceWaitIdle(); }
 		static void Terminate();
 	};
 

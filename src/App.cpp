@@ -62,9 +62,13 @@ namespace Iceberg {
 			
 			Update();
 
+			VK::DrawFrame();
+
 			//ImGui::Render();
 			//ImGui_ImplVulkan_RenderDrawData(ImGui::GetDrawData(), , nullptr);
 		}
+
+		VK::DeviceWaitIdle();
 
 		// Cleanup
 		//ImGui_ImplVulkan_Shutdown();
