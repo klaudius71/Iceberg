@@ -58,10 +58,10 @@ namespace Iceberg {
 			deltaTime = duration.count() * 1000.0f;
 			prevTime = currTime;
 			count++;
-			if (count == 500)
+			if (count == 72)
 			{
 				count = 0;
-				sprintf_s(buf, "deltaTime: %.3fms", deltaTime);
+				sprintf_s(buf, "woohoo, it works    deltaTime: %.3fms", deltaTime);
 				window->SetWindowTitle(buf);
 			}
 

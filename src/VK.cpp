@@ -160,8 +160,14 @@ namespace Iceberg {
 
 		return availableFormats[0];
 	}
-	VkPresentModeKHR VK::ChooseSwapPresentMode(const std::vector<VkPresentModeKHR>& availablePresentModes)
+	VkPresentModeKHR VK::ChooseSwapPresentMode(const std::vector<VkPresentModeKHR>& availablePresentModes, bool vsync)
 	{
+		if (vsync)
+		{
+			printf("\npresent mode: %s\n", "VK_PRESENT_MODE_FIFO_KHR");
+			return VK_PRESENT_MODE_FIFO_KHR;
+		}
+
 		for (const auto& availablePresentMode : availablePresentModes)
 		{
 			if (availablePresentMode == VK_PRESENT_MODE_MAILBOX_KHR)
@@ -192,7 +198,7 @@ namespace Iceberg {
 		SwapChainSupportDetails swapChainSupport = QuerySwapChainSupport(physicalDevice);
 
 		VkSurfaceFormatKHR surfaceFormat = ChooseSwapSurfaceFormat(swapChainSupport.formats);
-		VkPresentModeKHR presentMode = ChooseSwapPresentMode(swapChainSupport.presentModes);
+		VkPresentModeKHR presentMode = ChooseSwapPresentMode(swapChainSupport.presentModes, true);
 		VkExtent2D extent = ChooseSwapExtent(swapChainSupport.capabilities);
 
 		uint32_t imageCount = swapChainSupport.capabilities.minImageCount + 1;
