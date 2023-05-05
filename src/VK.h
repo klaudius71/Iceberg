@@ -87,6 +87,7 @@ namespace Iceberg {
 
 		void CreateSyncObjects();
 
+		VkDescriptorPool imguiPool;
 		void initializeImGui();
 		void terminateImGui();
 

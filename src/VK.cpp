@@ -58,7 +58,7 @@ namespace Iceberg {
 	VKAPI_ATTR VkBool32 VKAPI_CALL VK::debugCallback(VkDebugUtilsMessageSeverityFlagBitsEXT messageSeverity, VkDebugUtilsMessageTypeFlagsEXT, const VkDebugUtilsMessengerCallbackDataEXT* pCallbackData, void*)
 	{
 		if (messageSeverity >= VK_DEBUG_UTILS_MESSAGE_SEVERITY_WARNING_BIT_EXT)
-			printf("validation layer: %s\n", pCallbackData->pMessage);
+			printf("%s\n", pCallbackData->pMessage);
 
 		return VK_FALSE;
 	}
@@ -152,11 +152,11 @@ namespace Iceberg {
 		if (availableFormats.empty())
 			throw std::exception("No available swapchain surface formats available!");
 
-		for (const auto& availableFormat : availableFormats)
-		{
-			if (availableFormat.format == VK_FORMAT_B8G8R8A8_SRGB && availableFormat.colorSpace == VK_COLOR_SPACE_SRGB_NONLINEAR_KHR)
-				return availableFormat;
-		}
+		//for (const auto& availableFormat : availableFormats)
+		//{
+		//	if (availableFormat.format == VK_FORMAT_B8G8R8A8_SRGB && availableFormat.colorSpace == VK_COLOR_SPACE_SRGB_NONLINEAR_KHR)
+		//		return availableFormat;
+		//}
 
 		return availableFormats[0];
 	}
@@ -801,7 +801,7 @@ namespace Iceberg {
 
 			res = vkCreateFence(device, &fenceInfo, nullptr, &inFlightFence[i]);
 			if (res != VK_SUCCESS)
-				throw std::exception("Failed to create semaphore!");
+				throw std::exception("Failed to create fence!");
 		}		
 	}
 
@@ -829,7 +829,6 @@ namespace Iceberg {
 		pool_info.poolSizeCount = std::size(pool_sizes);
 		pool_info.pPoolSizes = pool_sizes;
 
-		VkDescriptorPool imguiPool;
 		VkResult res = vkCreateDescriptorPool(VK::GetLogicalDevice(), &pool_info, nullptr, &imguiPool);
 		if (res != VK_SUCCESS)
 			throw std::exception("Couldn't create descriptor pool!");
@@ -845,14 +844,48 @@ namespace Iceberg {
 		init_info.MinImageCount = 3;
 		init_info.ImageCount = 3;
 		init_info.MSAASamples = VK_SAMPLE_COUNT_1_BIT;
-
 		ImGui_ImplVulkan_Init(&init_info, renderPass);
 
-		//ImGui_ImplVulkan_CreateFontsTexture(commandBuffer);
+
+		vkResetFences(device, 1, &inFlightFence[0]);
+		vkResetCommandBuffer(commandBuffer[0], 0);
+
+		VkCommandBufferBeginInfo beginInfo{};
+		beginInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
+		beginInfo.flags = VK_COMMAND_BUFFER_USAGE_ONE_TIME_SUBMIT_BIT;
+		beginInfo.pInheritanceInfo = nullptr;
+
+
+		res = vkBeginCommandBuffer(commandBuffer[0], &beginInfo);
+		if (res != VK_SUCCESS)
+			throw std::runtime_error("failed to begin recording command buffer!");
 		
+		if (!ImGui_ImplVulkan_CreateFontsTexture(commandBuffer[0]))
+			throw std::exception("failed to initialize ImGui!");
+
+		res = vkEndCommandBuffer(commandBuffer[0]);
+		if (res != VK_SUCCESS)
+			throw std::exception("Failed to record command buffer!");
+		
+
+		VkSubmitInfo submitInfo{};
+		submitInfo.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
+		submitInfo.commandBufferCount = 1;
+		submitInfo.pCommandBuffers = commandBuffer;
+
+		res = vkQueueSubmit(graphicsQueue, 1, &submitInfo, inFlightFence[0]);
+		if (res != VK_SUCCESS)
+			throw std::exception("Failed to submit draw command buffer!");
+
+		vkWaitForFences(device, 1, &inFlightFence[0], VK_TRUE, UINT64_MAX);		
+
+		ImGui_ImplVulkan_DestroyFontUploadObjects();
 	}
 	void VK::terminateImGui()
 	{
+		vkDestroyDescriptorPool(device, imguiPool, nullptr);
+		ImGui_ImplVulkan_Shutdown();
+		ImGui_ImplGlfw_Shutdown();
 	}
 
 	void VK::recordCommandBuffer(VkCommandBuffer commandBuffer, uint32_t imageIndex)
@@ -895,6 +928,8 @@ namespace Iceberg {
 		vkCmdSetScissor(commandBuffer, 0, 1, &scissor);
 
 		vkCmdDraw(commandBuffer, 3, 1, 0, 0);
+
+		ImGui_ImplVulkan_RenderDrawData(ImGui::GetDrawData(), commandBuffer, VK_NULL_HANDLE);
 
 		vkCmdEndRenderPass(commandBuffer);
 
