@@ -766,58 +766,11 @@ namespace Iceberg {
 		allocInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO;
 		allocInfo.commandPool = commandPool;
 		allocInfo.level = VK_COMMAND_BUFFER_LEVEL_PRIMARY;
-		allocInfo.commandBufferCount = 1;
+		allocInfo.commandBufferCount = MAX_FRAMES_IN_FLIGHT;
 
-		VkResult res = vkAllocateCommandBuffers(device, &allocInfo, &commandBuffer);
+		VkResult res = vkAllocateCommandBuffers(device, &allocInfo, commandBuffer);
 		if (res != VK_SUCCESS)
 			throw std::exception("Failed to allocate command buffers!");
-	}
-	void VK::RecordCommandBuffer(VkCommandBuffer commandBuffer, uint32_t imageIndex)
-	{
-		VkCommandBufferBeginInfo beginInfo{};
-		beginInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
-		beginInfo.flags = 0;
-		beginInfo.pInheritanceInfo = nullptr;
-
-		VkResult res = vkBeginCommandBuffer(commandBuffer, &beginInfo);
-		if (res != VK_SUCCESS)
-			throw std::runtime_error("failed to begin recording command buffer!");
-	
-		VkRenderPassBeginInfo renderPassInfo{};
-		renderPassInfo.sType = VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO;
-		renderPassInfo.renderPass = renderPass;
-		renderPassInfo.framebuffer = swapChainFramebuffers[imageIndex];
-		renderPassInfo.renderArea.offset = { 0, 0 };
-		renderPassInfo.renderArea.extent = swapChainExtent;
-		VkClearValue clearColor = { {{0.0f, 0.0f, 0.0f, 1.0f}} };
-		renderPassInfo.clearValueCount = 1;
-		renderPassInfo.pClearValues = &clearColor;
-
-		vkCmdBeginRenderPass(commandBuffer, &renderPassInfo, VK_SUBPASS_CONTENTS_INLINE);
-
-		vkCmdBindPipeline(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, graphicsPipeline);
-
-		VkViewport viewport{};
-		viewport.x = 0.0f;
-		viewport.y = 0.0f;
-		viewport.width = static_cast<float>(swapChainExtent.width);
-		viewport.height = static_cast<float>(swapChainExtent.height);
-		viewport.minDepth = 0.0f;
-		viewport.maxDepth = 1.0f;
-		vkCmdSetViewport(commandBuffer, 0, 1, &viewport);
-
-		VkRect2D scissor{};
-		scissor.offset = { 0, 0 };
-		scissor.extent = swapChainExtent;
-		vkCmdSetScissor(commandBuffer, 0, 1, &scissor);
-
-		vkCmdDraw(commandBuffer, 3, 1, 0, 0);
-
-		vkCmdEndRenderPass(commandBuffer);
-
-		res = vkEndCommandBuffer(commandBuffer);
-		if (res != VK_SUCCESS)
-			throw std::exception("Failed to record command buffer!");
 	}
 
 	void VK::CreateSyncObjects()
@@ -830,17 +783,20 @@ namespace Iceberg {
 		fenceInfo.flags = VK_FENCE_CREATE_SIGNALED_BIT;
 
 		VkResult res;
-		res = vkCreateSemaphore(device, &semaphoreInfo, nullptr, &imageAvailableSemaphore);
-		if (res != VK_SUCCESS)
-			throw std::exception("Failed to create semaphore!");
+		for (int i = 0; i < MAX_FRAMES_IN_FLIGHT; i++)
+		{
+			res = vkCreateSemaphore(device, &semaphoreInfo, nullptr, &imageAvailableSemaphore[i]);
+			if (res != VK_SUCCESS)
+				throw std::exception("Failed to create semaphore!");
+			
+			res = vkCreateSemaphore(device, &semaphoreInfo, nullptr, &renderFinishedSemaphore[i]);
+			if (res != VK_SUCCESS)
+				throw std::exception("Failed to create semaphore!");
 
-		res = vkCreateSemaphore(device, &semaphoreInfo, nullptr, &renderFinishedSemaphore);
-		if (res != VK_SUCCESS)
-			throw std::exception("Failed to create semaphore!");
-
-		res = vkCreateFence(device, &fenceInfo, nullptr, &inFlightFence);
-		if (res != VK_SUCCESS)
-			throw std::exception("Failed to create semaphore!");
+			res = vkCreateFence(device, &fenceInfo, nullptr, &inFlightFence[i]);
+			if (res != VK_SUCCESS)
+				throw std::exception("Failed to create semaphore!");
+		}		
 	}
 
 	void VK::initializeImGui()
@@ -886,19 +842,66 @@ namespace Iceberg {
 
 		ImGui_ImplVulkan_Init(&init_info, renderPass);
 
-		ImGui_ImplVulkan_CreateFontsTexture(commandBuffer);
+		//ImGui_ImplVulkan_CreateFontsTexture(commandBuffer);
 		
 	}
 	void VK::terminateImGui()
 	{
 	}
 
+	void VK::recordCommandBuffer(VkCommandBuffer commandBuffer, uint32_t imageIndex)
+	{
+		VkCommandBufferBeginInfo beginInfo{};
+		beginInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
+		beginInfo.flags = 0;
+		beginInfo.pInheritanceInfo = nullptr;
+
+		VkResult res = vkBeginCommandBuffer(commandBuffer, &beginInfo);
+		if (res != VK_SUCCESS)
+			throw std::runtime_error("failed to begin recording command buffer!");
+
+		VkRenderPassBeginInfo renderPassInfo{};
+		renderPassInfo.sType = VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO;
+		renderPassInfo.renderPass = renderPass;
+		renderPassInfo.framebuffer = swapChainFramebuffers[imageIndex];
+		renderPassInfo.renderArea.offset = { 0, 0 };
+		renderPassInfo.renderArea.extent = swapChainExtent;
+		VkClearValue clearColor = { {{0.0f, 0.0f, 0.0f, 1.0f}} };
+		renderPassInfo.clearValueCount = 1;
+		renderPassInfo.pClearValues = &clearColor;
+
+		vkCmdBeginRenderPass(commandBuffer, &renderPassInfo, VK_SUBPASS_CONTENTS_INLINE);
+
+		vkCmdBindPipeline(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, graphicsPipeline);
+
+		VkViewport viewport{};
+		viewport.x = 0.0f;
+		viewport.y = 0.0f;
+		viewport.width = static_cast<float>(swapChainExtent.width);
+		viewport.height = static_cast<float>(swapChainExtent.height);
+		viewport.minDepth = 0.0f;
+		viewport.maxDepth = 1.0f;
+		vkCmdSetViewport(commandBuffer, 0, 1, &viewport);
+
+		VkRect2D scissor{};
+		scissor.offset = { 0, 0 };
+		scissor.extent = swapChainExtent;
+		vkCmdSetScissor(commandBuffer, 0, 1, &scissor);
+
+		vkCmdDraw(commandBuffer, 3, 1, 0, 0);
+
+		vkCmdEndRenderPass(commandBuffer);
+
+		res = vkEndCommandBuffer(commandBuffer);
+		if (res != VK_SUCCESS)
+			throw std::exception("Failed to record command buffer!");
+	}
 	void VK::drawFrame()
 	{
-		vkWaitForFences(device, 1, &inFlightFence, VK_TRUE, UINT64_MAX);
+		vkWaitForFences(device, 1, &inFlightFence[currentFrame], VK_TRUE, UINT64_MAX);
 
 		uint32_t imageIndex;
-		VkResult res = vkAcquireNextImageKHR(device, swapChain, UINT64_MAX, imageAvailableSemaphore, VK_NULL_HANDLE, &imageIndex);
+		VkResult res = vkAcquireNextImageKHR(device, swapChain, UINT64_MAX, imageAvailableSemaphore[currentFrame], VK_NULL_HANDLE, &imageIndex);
 		if (res == VK_ERROR_OUT_OF_DATE_KHR) {
 			RecreateSwapChain();
 			return;
@@ -907,26 +910,26 @@ namespace Iceberg {
 			throw std::exception("Failed to acquire swap chain image!");
 		}
 
-		vkResetFences(device, 1, &inFlightFence);
+		vkResetFences(device, 1, &inFlightFence[currentFrame]);
 
-		vkResetCommandBuffer(commandBuffer, 0);
-		RecordCommandBuffer(commandBuffer, imageIndex);
+		vkResetCommandBuffer(commandBuffer[currentFrame], 0);
+		recordCommandBuffer(commandBuffer[currentFrame], imageIndex);
 	
 		VkSubmitInfo submitInfo{};
 		submitInfo.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
 
-		VkSemaphore waitSemaphores[] = { imageAvailableSemaphore };
+		VkSemaphore waitSemaphores[] = { imageAvailableSemaphore[currentFrame] };
 		VkPipelineStageFlags waitStages[] = { VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT };
 		submitInfo.waitSemaphoreCount = 1;
 		submitInfo.pWaitSemaphores = waitSemaphores;
 		submitInfo.pWaitDstStageMask = waitStages;
 		submitInfo.commandBufferCount = 1;
-		submitInfo.pCommandBuffers = &commandBuffer;
-		VkSemaphore signalSemaphores[] = { renderFinishedSemaphore };
+		submitInfo.pCommandBuffers = &commandBuffer[currentFrame];
+		VkSemaphore signalSemaphores[] = { renderFinishedSemaphore[currentFrame] };
 		submitInfo.signalSemaphoreCount = 1;
 		submitInfo.pSignalSemaphores = signalSemaphores;
 
-		res = vkQueueSubmit(graphicsQueue, 1, &submitInfo, inFlightFence);
+		res = vkQueueSubmit(graphicsQueue, 1, &submitInfo, inFlightFence[currentFrame]);
 		if (res != VK_SUCCESS)
 			throw std::exception("Failed to submit draw command buffer!");
 
@@ -946,6 +949,8 @@ namespace Iceberg {
 			RecreateSwapChain();
 		else if (res != VK_SUCCESS)
 			throw std::exception("Failed to present swap chain image!");
+
+		++currentFrame %= MAX_FRAMES_IN_FLIGHT;
 	}
 	void VK::deviceWaitIdle()
 	{
@@ -954,9 +959,12 @@ namespace Iceberg {
 
 	void VK::CleanupVulkan()
 	{
-		vkDestroySemaphore(device, imageAvailableSemaphore, nullptr);
-		vkDestroySemaphore(device, renderFinishedSemaphore, nullptr);
-		vkDestroyFence(device, inFlightFence, nullptr);
+		for (int i = 0; i < MAX_FRAMES_IN_FLIGHT; i++)
+		{
+			vkDestroySemaphore(device, imageAvailableSemaphore[i], nullptr);
+			vkDestroySemaphore(device, renderFinishedSemaphore[i], nullptr);
+			vkDestroyFence(device, inFlightFence[i], nullptr);
+		}
 
 		vkDestroyCommandPool(device, commandPool, nullptr);
 

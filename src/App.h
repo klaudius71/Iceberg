@@ -32,6 +32,9 @@ namespace Iceberg {
 
 		Window* window = nullptr;
 
+		std::chrono::high_resolution_clock::time_point prevTime;
+		float deltaTime;
+
 	public:
 		static const Window* GetWindow();
 	};

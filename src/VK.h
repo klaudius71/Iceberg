@@ -9,6 +9,8 @@ namespace Iceberg {
 	constexpr bool ENABLE_VALIDATION_LAYERS = false;
 #endif
 
+	constexpr int MAX_FRAMES_IN_FLIGHT = 1;
+
 	class VK
 	{
 	private:
@@ -82,13 +84,13 @@ namespace Iceberg {
 		void CreateFramebuffers();
 		void CreateCommandPool();
 		void CreateCommandBuffer();
-		void RecordCommandBuffer(VkCommandBuffer commandBuffer, uint32_t imageIndex);
 
 		void CreateSyncObjects();
 
 		void initializeImGui();
 		void terminateImGui();
 
+		void recordCommandBuffer(VkCommandBuffer commandBuffer, uint32_t imageIndex);
 		void drawFrame();
 		void deviceWaitIdle();
 
@@ -117,11 +119,13 @@ namespace Iceberg {
 
 		std::vector<VkFramebuffer> swapChainFramebuffers;
 		VkCommandPool commandPool;
-		VkCommandBuffer commandBuffer;
+		VkCommandBuffer commandBuffer[MAX_FRAMES_IN_FLIGHT];
 
-		VkSemaphore imageAvailableSemaphore;
-		VkSemaphore renderFinishedSemaphore;
-		VkFence inFlightFence;
+		VkSemaphore imageAvailableSemaphore[MAX_FRAMES_IN_FLIGHT];
+		VkSemaphore renderFinishedSemaphore[MAX_FRAMES_IN_FLIGHT];
+		VkFence inFlightFence[MAX_FRAMES_IN_FLIGHT];
+
+		uint32_t currentFrame = 0;
 
 	public:
 		static void Initialize();

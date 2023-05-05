@@ -33,12 +33,12 @@ namespace Iceberg {
 		//io.ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard;       // Enable Keyboard Controls
 		//io.ConfigFlags |= ImGuiConfigFlags_DockingEnable;           // Enable Docking
 		//io.ConfigFlags |= ImGuiConfigFlags_ViewportsEnable;         // Enable Multi-Viewport / Platform Windows
-		//io.ConfigViewportsNoAutoMerge = true;
-		//io.ConfigViewportsNoTaskBarIcon = true;
+		// io.ConfigViewportsNoAutoMerge = true;
+		// io.ConfigViewportsNoTaskBarIcon = true;
 
 		// Setup Dear ImGui style
 		//ImGui::StyleColorsDark();
-		//ImGui::StyleColorsLight();
+		// ImGui::StyleColorsLight();
 
 		//ImGuiStyle& style = ImGui::GetStyle();
 		//if (io.ConfigFlags & ImGuiConfigFlags_ViewportsEnable)
@@ -49,8 +49,22 @@ namespace Iceberg {
 
 		//VK::InitializeImGui();
 
+		char buf[64];
+		int count = 0;
 		while (!window->IsOpen())
 		{
+			auto currTime = std::chrono::high_resolution_clock::now();
+			std::chrono::duration<float> duration = currTime - prevTime;
+			deltaTime = duration.count() * 1000.0f;
+			prevTime = currTime;
+			count++;
+			if (count == 500)
+			{
+				count = 0;
+				sprintf_s(buf, "deltaTime: %.3fms", deltaTime);
+				window->SetWindowTitle(buf);
+			}
+
 			window->PollEvents();
 			
 			//ImGui_ImplGlfw_NewFrame();
