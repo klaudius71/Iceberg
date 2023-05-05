@@ -22,6 +22,10 @@ namespace Iceberg {
 	{
 		return Instance().vkInstance;
 	}
+	VkDevice VK::GetLogicalDevice()
+	{
+		return Instance().device;
+	}
 	void VK::Terminate()
 	{
 		assert(instance && "VK instance not created!");
@@ -264,6 +268,34 @@ namespace Iceberg {
 			if (res != VK_SUCCESS)
 				throw std::exception("Failed to create image views!");
 		}
+	}
+	void VK::CleanupSwapChain()
+	{
+		for (size_t i = 0; i < swapChainFramebuffers.size(); i++)
+			vkDestroyFramebuffer(device, swapChainFramebuffers[i], nullptr);
+
+		for (size_t i = 0; i < swapChainImageViews.size(); i++)
+			vkDestroyImageView(device, swapChainImageViews[i], nullptr);
+
+		vkDestroySwapchainKHR(device, swapChain, nullptr);
+	}
+	void VK::RecreateSwapChain()
+	{
+		int width, height;
+		glfwGetFramebufferSize(App::GetWindow()->GetGLFWWindow(), &width, &height);
+		while (width == 0 || height == 0)
+		{
+			glfwGetFramebufferSize(App::GetWindow()->GetGLFWWindow(), &width, &height);
+			glfwWaitEvents();
+		}
+
+		vkDeviceWaitIdle(device);
+
+		CleanupSwapChain();
+
+		CreateSwapChain();
+		CreateImageViews();
+		CreateFramebuffers();
 	}
 
 	std::vector<const char*> VK::GetRequiredExtensions()
@@ -811,13 +843,71 @@ namespace Iceberg {
 			throw std::exception("Failed to create semaphore!");
 	}
 
+	void VK::initializeImGui()
+	{
+		VkDescriptorPoolSize pool_sizes[] =
+		{
+			{ VK_DESCRIPTOR_TYPE_SAMPLER, 1000 },
+			{ VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, 1000 },
+			{ VK_DESCRIPTOR_TYPE_SAMPLED_IMAGE, 1000 },
+			{ VK_DESCRIPTOR_TYPE_STORAGE_IMAGE, 1000 },
+			{ VK_DESCRIPTOR_TYPE_UNIFORM_TEXEL_BUFFER, 1000 },
+			{ VK_DESCRIPTOR_TYPE_STORAGE_TEXEL_BUFFER, 1000 },
+			{ VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, 1000 },
+			{ VK_DESCRIPTOR_TYPE_STORAGE_BUFFER, 1000 },
+			{ VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER_DYNAMIC, 1000 },
+			{ VK_DESCRIPTOR_TYPE_STORAGE_BUFFER_DYNAMIC, 1000 },
+			{ VK_DESCRIPTOR_TYPE_INPUT_ATTACHMENT, 1000 }
+		};
+
+		VkDescriptorPoolCreateInfo pool_info = {};
+		pool_info.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_POOL_CREATE_INFO;
+		pool_info.flags = VK_DESCRIPTOR_POOL_CREATE_FREE_DESCRIPTOR_SET_BIT;
+		pool_info.maxSets = 1000;
+		pool_info.poolSizeCount = std::size(pool_sizes);
+		pool_info.pPoolSizes = pool_sizes;
+
+		VkDescriptorPool imguiPool;
+		VkResult res = vkCreateDescriptorPool(VK::GetLogicalDevice(), &pool_info, nullptr, &imguiPool);
+		if (res != VK_SUCCESS)
+			throw std::exception("Couldn't create descriptor pool!");
+
+		ImGui_ImplGlfw_InitForVulkan(App::GetWindow()->GetGLFWWindow(), true);
+		
+		ImGui_ImplVulkan_InitInfo init_info = {};
+		init_info.Instance = vkInstance;
+		init_info.PhysicalDevice = physicalDevice;
+		init_info.Device = device;
+		init_info.Queue = graphicsQueue;
+		init_info.DescriptorPool = imguiPool;
+		init_info.MinImageCount = 3;
+		init_info.ImageCount = 3;
+		init_info.MSAASamples = VK_SAMPLE_COUNT_1_BIT;
+
+		ImGui_ImplVulkan_Init(&init_info, renderPass);
+
+		ImGui_ImplVulkan_CreateFontsTexture(commandBuffer);
+		
+	}
+	void VK::terminateImGui()
+	{
+	}
+
 	void VK::drawFrame()
 	{
 		vkWaitForFences(device, 1, &inFlightFence, VK_TRUE, UINT64_MAX);
-		vkResetFences(device, 1, &inFlightFence);
 
 		uint32_t imageIndex;
-		vkAcquireNextImageKHR(device, swapChain, UINT64_MAX, imageAvailableSemaphore, VK_NULL_HANDLE, &imageIndex);
+		VkResult res = vkAcquireNextImageKHR(device, swapChain, UINT64_MAX, imageAvailableSemaphore, VK_NULL_HANDLE, &imageIndex);
+		if (res == VK_ERROR_OUT_OF_DATE_KHR) {
+			RecreateSwapChain();
+			return;
+		}
+		else if (res != VK_SUCCESS && res != VK_SUBOPTIMAL_KHR) {
+			throw std::exception("Failed to acquire swap chain image!");
+		}
+
+		vkResetFences(device, 1, &inFlightFence);
 
 		vkResetCommandBuffer(commandBuffer, 0);
 		RecordCommandBuffer(commandBuffer, imageIndex);
@@ -836,7 +926,7 @@ namespace Iceberg {
 		submitInfo.signalSemaphoreCount = 1;
 		submitInfo.pSignalSemaphores = signalSemaphores;
 
-		VkResult res = vkQueueSubmit(graphicsQueue, 1, &submitInfo, inFlightFence);
+		res = vkQueueSubmit(graphicsQueue, 1, &submitInfo, inFlightFence);
 		if (res != VK_SUCCESS)
 			throw std::exception("Failed to submit draw command buffer!");
 
@@ -851,7 +941,11 @@ namespace Iceberg {
 		presentInfo.pImageIndices = &imageIndex;
 		presentInfo.pResults = nullptr;
 
-		vkQueuePresentKHR(presentQueue, &presentInfo);
+		res = vkQueuePresentKHR(presentQueue, &presentInfo);
+		if (res == VK_ERROR_OUT_OF_DATE_KHR || res == VK_SUBOPTIMAL_KHR)
+			RecreateSwapChain();
+		else if (res != VK_SUCCESS)
+			throw std::exception("Failed to present swap chain image!");
 	}
 	void VK::deviceWaitIdle()
 	{

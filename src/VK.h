@@ -58,6 +58,8 @@ namespace Iceberg {
 		VkExtent2D ChooseSwapExtent(const VkSurfaceCapabilitiesKHR& capabilities);
 		void CreateSwapChain();
 		void CreateImageViews();
+		void CleanupSwapChain();
+		void RecreateSwapChain();
 
 		static std::vector<const char*> GetRequiredExtensions();
 		bool IsDeviceSuitable(VkPhysicalDevice device);
@@ -83,6 +85,9 @@ namespace Iceberg {
 		void RecordCommandBuffer(VkCommandBuffer commandBuffer, uint32_t imageIndex);
 
 		void CreateSyncObjects();
+
+		void initializeImGui();
+		void terminateImGui();
 
 		void drawFrame();
 		void deviceWaitIdle();
@@ -121,6 +126,9 @@ namespace Iceberg {
 	public:
 		static void Initialize();
 		static VkInstance GetVkInstance();
+		static void InitializeImGui() { Instance().initializeImGui(); }
+		static void TerminateImGui() { Instance().terminateImGui(); }
+		static VkDevice GetLogicalDevice();
 		static void DrawFrame() { Instance().drawFrame(); }
 		static void DeviceWaitIdle() { Instance().deviceWaitIdle(); }
 		static void Terminate();
