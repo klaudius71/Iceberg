@@ -148,6 +148,8 @@ namespace Iceberg {
 		static void TerminateImGui() { Instance().terminateImGui(); }
 		static VkDevice GetLogicalDevice();
 		static uint32_t FindMemoryType(uint32_t typeFilter, VkMemoryPropertyFlags properties);
+		static VkCommandPool GetCommandPool();
+		static VkQueue GetTransferQueue();
 		static void DrawFrame() { Instance().drawFrame(); }
 		static void DeviceWaitIdle() { Instance().deviceWaitIdle(); }
 		static void Terminate();

@@ -74,7 +74,7 @@ namespace Iceberg {
 			
 			//ImGui::ShowDemoWindow();
 
-			//Update();
+			Update();
 
 			//ImGui::Render();
 			VK::DrawFrame();

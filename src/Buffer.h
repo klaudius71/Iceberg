@@ -15,16 +15,20 @@ namespace Iceberg {
 	public:
 		operator VkBuffer() const;
 
+		bool IsCPUWriteable() const;
+
 		VkResult Bind() const;
 
 		VkResult Map(void*& mem) const;
 		void Unmap() const;
 
-	private:
+
+	protected:
 		VkDevice dev;
 		VkBuffer buffer;
 		VkDeviceMemory bufferMemory;
 		uint64_t size;
+		bool cpuWriteable;
 	};
 
 }

@@ -12,9 +12,9 @@ void Sandbox::Start()
 
 void Sandbox::Update()
 {
-	ImGui::Begin("WOAH");
-	ImGui::Text("That's pretty cool!");
-	ImGui::End();
+	//ImGui::Begin("WOAH");
+	//ImGui::Text("That's pretty cool!");
+	//ImGui::End();
 }
 
 void Sandbox::End()

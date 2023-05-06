@@ -78,6 +78,9 @@
     <ClCompile Include="src\Vertex.cpp">
       <Filter>Source Files\GraphicsContext</Filter>
     </ClCompile>
+    <ClCompile Include="src\StagingBuffer.cpp">
+      <Filter>Source Files\GraphicsContext\Buffers</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="src\App.h">

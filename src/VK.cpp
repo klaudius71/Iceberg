@@ -3,6 +3,7 @@
 #include "App.h"
 #include "Window.h"
 #include "VertexBuffer.h"
+#include "StagingBuffer.h"
 
 namespace Iceberg {
 
@@ -41,6 +42,14 @@ namespace Iceberg {
 
 		return 0;
 	}
+	VkCommandPool VK::GetCommandPool()
+	{
+		return Instance().commandPool;
+	}
+	VkQueue VK::GetTransferQueue()
+	{
+		return Instance().graphicsQueue;
+	}
 	void VK::Terminate()
 	{
 		assert(instance && "VK instance not created!");
@@ -62,7 +71,15 @@ namespace Iceberg {
 		CreateFramebuffers();
 		CreateCommandPool();
 
-		vertexBuffer = new VertexBuffer(device, vertices);
+		uint64_t bufferSize = sizeof(Vertex) * vertices.size();
+		vertexBuffer = new VertexBuffer(device, bufferSize);
+		StagingBuffer stagingBuffer(device, bufferSize);
+		stagingBuffer.Bind();
+		void* mem;
+		stagingBuffer.Map(mem);
+		memcpy_s(mem, bufferSize, vertices.data(), bufferSize);
+		stagingBuffer.Unmap();
+		stagingBuffer.TransferBuffer(vertexBuffer);
 
 		CreateCommandBuffer();
 		CreateSyncObjects();

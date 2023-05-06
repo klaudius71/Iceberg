@@ -40,6 +40,11 @@ namespace Iceberg {
 		return buffer;
 	}
 
+	bool Buffer::IsCPUWriteable() const
+	{
+		return cpuWriteable;
+	}
+
 	VkResult Buffer::Bind() const
 	{
 		return vkBindBufferMemory(dev, buffer, bufferMemory, 0);
@@ -47,11 +52,12 @@ namespace Iceberg {
 
 	VkResult Buffer::Map(void*& mem) const
 	{
-		assert(mem);
+		assert(mem && cpuWriteable);
 		return vkMapMemory(dev, bufferMemory, 0, size, 0, &mem);
 	}
 	void Buffer::Unmap() const
 	{
+		assert(cpuWriteable);
 		vkUnmapMemory(dev, bufferMemory);
 	}
 
