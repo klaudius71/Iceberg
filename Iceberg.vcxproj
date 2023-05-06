@@ -139,6 +139,7 @@
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Create</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Create</PrecompiledHeader>
     </ClCompile>
+    <ClCompile Include="src\VertexBuffer.cpp" />
     <ClCompile Include="src\VK.cpp" />
     <ClCompile Include="src\Window.cpp" />
   </ItemGroup>
@@ -151,6 +152,7 @@
     <ClInclude Include="src\IcebergAPI.h" />
     <ClInclude Include="src\IcebergCore.h" />
     <ClInclude Include="src\ipch.h" />
+    <ClInclude Include="src\VertexBuffer.h" />
     <ClInclude Include="src\VK.h" />
     <ClInclude Include="src\Window.h" />
   </ItemGroup>

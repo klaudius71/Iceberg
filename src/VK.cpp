@@ -2,6 +2,7 @@
 #include "VK.h"
 #include "App.h"
 #include "Window.h"
+#include "VertexBuffer.h"
 
 namespace Iceberg {
 
@@ -16,7 +17,9 @@ namespace Iceberg {
 	void VK::Initialize()
 	{
 		assert(!instance && "VK instance already created!");
-		instance = new VK;
+		instance = (VK*)malloc(sizeof(VK));
+		memset(instance, 0, sizeof(VK));
+		new(instance) VK;
 	}
 	VkInstance VK::GetVkInstance()
 	{
@@ -25,6 +28,18 @@ namespace Iceberg {
 	VkDevice VK::GetLogicalDevice()
 	{
 		return Instance().device;
+	}
+	uint32_t VK::FindMemoryType(uint32_t typeFilter, VkMemoryPropertyFlags properties)
+	{
+		VkPhysicalDeviceMemoryProperties memProperties;
+		vkGetPhysicalDeviceMemoryProperties(Instance().physicalDevice, &memProperties);
+		for (uint32_t i = 0; i < memProperties.memoryTypeCount; i++)
+			if ((typeFilter & (1 << i)) && (memProperties.memoryTypes[i].propertyFlags & properties) == properties)
+				return i;
+
+		throw std::exception("Failed to find suitable memory type!");
+
+		return 0;
 	}
 	void VK::Terminate()
 	{
@@ -46,6 +61,15 @@ namespace Iceberg {
 		CreateGraphicsPipeline();
 		CreateFramebuffers();
 		CreateCommandPool();
+
+		std::vector<Vertex> vertices
+		{ 
+			{ { 0.0f, -0.5f, 0.0f }, { 1.0f, 0.0f, 0.0f } },
+			{ { 0.5f, 0.5f, 0.0f }, { 0.0f, 1.0f, 0.0f } },
+			{ { -0.5f, 0.5f, 0.0f }, { 0.0f, 0.0f, 1.0f } } 
+		};
+		vertexBuffer = new VertexBuffer(device, vertices);
+
 		CreateCommandBuffer();
 		CreateSyncObjects();
 	}
@@ -606,12 +630,15 @@ namespace Iceberg {
 		inputAssembly.primitiveRestartEnable = VK_FALSE;
 		
 		// Vertex stage
+		auto bindingDescription = Vertex::GetBindingDescription();
+		auto attributeDescriptions = Vertex::GetAttributeDescriptions();
+
 		VkPipelineVertexInputStateCreateInfo vertexInputInfo{};
 		vertexInputInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_VERTEX_INPUT_STATE_CREATE_INFO;
-		vertexInputInfo.vertexBindingDescriptionCount = 0;
-		vertexInputInfo.pVertexBindingDescriptions = nullptr;
-		vertexInputInfo.vertexAttributeDescriptionCount = 0;
-		vertexInputInfo.pVertexAttributeDescriptions = nullptr;
+		vertexInputInfo.vertexBindingDescriptionCount = 1;
+		vertexInputInfo.vertexAttributeDescriptionCount = (uint32_t)attributeDescriptions.size();
+		vertexInputInfo.pVertexBindingDescriptions = &bindingDescription;
+		vertexInputInfo.pVertexAttributeDescriptions = attributeDescriptions.data();
 
 		// Viewport and scissor
 		VkViewport viewport{};
@@ -826,7 +853,7 @@ namespace Iceberg {
 		pool_info.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_POOL_CREATE_INFO;
 		pool_info.flags = VK_DESCRIPTOR_POOL_CREATE_FREE_DESCRIPTOR_SET_BIT;
 		pool_info.maxSets = 1000;
-		pool_info.poolSizeCount = std::size(pool_sizes);
+		pool_info.poolSizeCount = (uint32_t)std::size(pool_sizes);
 		pool_info.pPoolSizes = pool_sizes;
 
 		VkResult res = vkCreateDescriptorPool(VK::GetLogicalDevice(), &pool_info, nullptr, &imguiPool);
@@ -845,7 +872,6 @@ namespace Iceberg {
 		init_info.ImageCount = 3;
 		init_info.MSAASamples = VK_SAMPLE_COUNT_1_BIT;
 		ImGui_ImplVulkan_Init(&init_info, renderPass);
-
 
 		vkResetFences(device, 1, &inFlightFence[0]);
 		vkResetCommandBuffer(commandBuffer[0], 0);
@@ -913,6 +939,10 @@ namespace Iceberg {
 
 		vkCmdBindPipeline(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, graphicsPipeline);
 
+		VkBuffer vertexBuffers[] { *vertexBuffer };
+		VkDeviceSize offsets[] { 0 };
+		vkCmdBindVertexBuffers(commandBuffer, 0, 1, vertexBuffers, offsets);
+
 		VkViewport viewport{};
 		viewport.x = 0.0f;
 		viewport.y = 0.0f;
@@ -929,7 +959,7 @@ namespace Iceberg {
 
 		vkCmdDraw(commandBuffer, 3, 1, 0, 0);
 
-		ImGui_ImplVulkan_RenderDrawData(ImGui::GetDrawData(), commandBuffer, VK_NULL_HANDLE);
+		//ImGui_ImplVulkan_RenderDrawData(ImGui::GetDrawData(), commandBuffer, VK_NULL_HANDLE);
 
 		vkCmdEndRenderPass(commandBuffer);
 
@@ -1000,6 +1030,8 @@ namespace Iceberg {
 
 	void VK::CleanupVulkan()
 	{
+		delete vertexBuffer;
+
 		for (int i = 0; i < MAX_FRAMES_IN_FLIGHT; i++)
 		{
 			vkDestroySemaphore(device, imageAvailableSemaphore[i], nullptr);
@@ -1009,17 +1041,11 @@ namespace Iceberg {
 
 		vkDestroyCommandPool(device, commandPool, nullptr);
 
-		for (auto framebuffer : swapChainFramebuffers)
-			vkDestroyFramebuffer(device, framebuffer, nullptr);
-
 		vkDestroyPipeline(device, graphicsPipeline, nullptr);
 		vkDestroyPipelineLayout(device, pipelineLayout, nullptr);
 		vkDestroyRenderPass(device, renderPass, nullptr);
 
-		for (auto imageView : swapChainImageViews)
-			vkDestroyImageView(device, imageView, nullptr);
-
-		vkDestroySwapchainKHR(device, swapChain, nullptr);
+		CleanupSwapChain();
 		vkDestroyDevice(device, nullptr);
 		vkDestroySurfaceKHR(vkInstance, surface, nullptr);
 
@@ -1030,4 +1056,3 @@ namespace Iceberg {
 	}
 
 }
-

@@ -27,27 +27,27 @@ namespace Iceberg {
 		Start();
 
 		// Setup Dear ImGui context
-		IMGUI_CHECKVERSION();
-		ImGui::CreateContext();
-		ImGuiIO& io = ImGui::GetIO(); (void)io;
-		io.ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard;       // Enable Keyboard Controls
-		io.ConfigFlags |= ImGuiConfigFlags_DockingEnable;           // Enable Docking
-		io.ConfigFlags |= ImGuiConfigFlags_ViewportsEnable;         // Enable Multi-Viewport / Platform Windows
+		//IMGUI_CHECKVERSION();
+		//ImGui::CreateContext();
+		//ImGuiIO& io = ImGui::GetIO(); (void)io;
+		//io.ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard;       // Enable Keyboard Controls
+		//io.ConfigFlags |= ImGuiConfigFlags_DockingEnable;           // Enable Docking
+		//io.ConfigFlags |= ImGuiConfigFlags_ViewportsEnable;         // Enable Multi-Viewport / Platform Windows
 		// io.ConfigViewportsNoAutoMerge = true;
 		// io.ConfigViewportsNoTaskBarIcon = true;
 
 		// Setup Dear ImGui style
-		ImGui::StyleColorsDark();
+		//ImGui::StyleColorsDark();
 		// ImGui::StyleColorsLight();
 
-		ImGuiStyle& style = ImGui::GetStyle();
-		if (io.ConfigFlags & ImGuiConfigFlags_ViewportsEnable)
-		{
-			style.WindowRounding = 0.0f;
-			style.Colors[ImGuiCol_WindowBg].w = 1.0f;
-		}
+		//ImGuiStyle& style = ImGui::GetStyle();
+		//if (io.ConfigFlags & ImGuiConfigFlags_ViewportsEnable)
+		//{
+		//	style.WindowRounding = 0.0f;
+		//	style.Colors[ImGuiCol_WindowBg].w = 1.0f;
+		//}
 
-		VK::InitializeImGui();
+		//VK::InitializeImGui();
 
 		char buf[64];
 		int count = 0;
@@ -58,7 +58,7 @@ namespace Iceberg {
 			deltaTime = duration.count() * 1000.0f;
 			prevTime = currTime;
 			count++;
-			if (count == 72)
+			if (count == 10)
 			{
 				count = 0;
 				sprintf_s(buf, "woohoo, it works    deltaTime: %.3fms", deltaTime);
@@ -67,31 +67,31 @@ namespace Iceberg {
 
 			window->PollEvents();
 			
-			ImGui_ImplVulkan_NewFrame();
-			ImGui_ImplGlfw_NewFrame();
-			ImGui::NewFrame();
-			ImGui::DockSpaceOverViewport(ImGui::GetMainViewport());
+			//ImGui_ImplVulkan_NewFrame();
+			//ImGui_ImplGlfw_NewFrame();
+			//ImGui::NewFrame();
+			//ImGui::DockSpaceOverViewport(ImGui::GetMainViewport());
 			
-			ImGui::ShowDemoWindow();
+			//ImGui::ShowDemoWindow();
 
-			Update();
+			//Update();
 
-			ImGui::Render();
+			//ImGui::Render();
 			VK::DrawFrame();
 
-			ImGui::GetIO().ConfigFlags |= ImGuiConfigFlags_ViewportsEnable;
-			if (io.ConfigFlags & ImGuiConfigFlags_ViewportsEnable)
-			{
-				ImGui::UpdatePlatformWindows();
-				ImGui::RenderPlatformWindowsDefault();
-			}
+			//ImGui::GetIO().ConfigFlags |= ImGuiConfigFlags_ViewportsEnable;
+			//if (io.ConfigFlags & ImGuiConfigFlags_ViewportsEnable)
+			//{
+			//	ImGui::UpdatePlatformWindows();
+			//	ImGui::RenderPlatformWindowsDefault();
+			//}
 		}
 
 		VK::DeviceWaitIdle();
 
 		// Cleanup
-		VK::TerminateImGui();
-		ImGui::DestroyContext();
+		//VK::TerminateImGui();
+		//ImGui::DestroyContext();
 
 		End();
 	}

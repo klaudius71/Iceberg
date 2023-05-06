@@ -11,6 +11,8 @@ namespace Iceberg {
 
 	constexpr int MAX_FRAMES_IN_FLIGHT = 1;
 
+	class VertexBuffer;
+
 	class VK
 	{
 	private:
@@ -116,6 +118,7 @@ namespace Iceberg {
 
 		VkRenderPass renderPass;
 		VkPipelineLayout pipelineLayout;
+		VertexBuffer* vertexBuffer;
 		VkPipeline graphicsPipeline;
 
 		std::vector<VkFramebuffer> swapChainFramebuffers;
@@ -134,6 +137,7 @@ namespace Iceberg {
 		static void InitializeImGui() { Instance().initializeImGui(); }
 		static void TerminateImGui() { Instance().terminateImGui(); }
 		static VkDevice GetLogicalDevice();
+		static uint32_t FindMemoryType(uint32_t typeFilter, VkMemoryPropertyFlags properties);
 		static void DrawFrame() { Instance().drawFrame(); }
 		static void DeviceWaitIdle() { Instance().deviceWaitIdle(); }
 		static void Terminate();
