@@ -10,6 +10,36 @@ namespace Iceberg {
 		cpuWriteable = true;
 	}
 
+	void StagingBuffer::Resize(VkDeviceSize size)
+	{
+		vkDestroyBuffer(dev, buffer, nullptr);
+		vkFreeMemory(dev, bufferMemory, nullptr);
+
+		this->size = size;
+
+		VkBufferCreateInfo bufferInfo{};
+		bufferInfo.sType = VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO;
+		bufferInfo.size = size;
+		bufferInfo.usage = VK_BUFFER_USAGE_TRANSFER_SRC_BIT;
+		bufferInfo.sharingMode = VK_SHARING_MODE_EXCLUSIVE;
+
+		VkResult res = vkCreateBuffer(dev, &bufferInfo, nullptr, &buffer);
+		if (res != VK_SUCCESS)
+			throw std::exception("Failed to create buffer!");
+
+		VkMemoryRequirements memRequirements;
+		vkGetBufferMemoryRequirements(dev, buffer, &memRequirements);
+
+		VkMemoryAllocateInfo allocInfo{};
+		allocInfo.sType = VK_STRUCTURE_TYPE_MEMORY_ALLOCATE_INFO;
+		allocInfo.allocationSize = memRequirements.size;
+		allocInfo.memoryTypeIndex = VK::FindMemoryType(memRequirements.memoryTypeBits, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT);
+
+		res = vkAllocateMemory(dev, &allocInfo, nullptr, &bufferMemory);
+		if (res != VK_SUCCESS)
+			throw std::exception("Failed to allocate buffer memory!");
+	}
+
 	void StagingBuffer::TransferBuffer(const Buffer* const buf) const
 	{
 		assert(buf);

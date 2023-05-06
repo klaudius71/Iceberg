@@ -14,6 +14,7 @@ namespace Iceberg {
 	constexpr int MAX_FRAMES_IN_FLIGHT = 1;
 
 	class VertexBuffer;
+	class IndexBuffer;
 
 	class VK
 	{
@@ -122,6 +123,7 @@ namespace Iceberg {
 		VkRenderPass renderPass;
 		VkPipelineLayout pipelineLayout;
 		VertexBuffer* vertexBuffer;
+		IndexBuffer* indexBuffer;
 		VkPipeline graphicsPipeline;
 
 		std::vector<VkFramebuffer> swapChainFramebuffers;
@@ -136,9 +138,15 @@ namespace Iceberg {
 
 		const std::vector<Vertex> vertices
 		{
-			{ {  0.0f, -0.5f, 0.0f }, { 1.0f, 0.0f, 0.0f } },
-			{ {  0.5f,  0.5f, 0.0f }, { 0.0f, 1.0f, 0.0f } },
-			{ { -0.5f,  0.5f, 0.0f }, { 0.0f, 0.0f, 1.0f } }
+			{{ -0.5f, -0.5f, 0.0f }, {1.0f, 0.0f, 0.0f}},
+			{{  0.5f, -0.5f, 0.0f }, {0.0f, 1.0f, 0.0f}},
+			{{  0.5f,  0.5f, 0.0f }, {0.0f, 0.0f, 1.0f}},
+			{{ -0.5f,  0.5f, 0.0f }, {1.0f, 1.0f, 1.0f}}
+		};
+		const std::vector<uint32_t> indices
+		{
+			0, 1, 2,
+			2, 3, 0
 		};
 
 	public:

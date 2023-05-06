@@ -3,6 +3,7 @@
 #include "App.h"
 #include "Window.h"
 #include "VertexBuffer.h"
+#include "IndexBuffer.h"
 #include "StagingBuffer.h"
 
 namespace Iceberg {
@@ -80,6 +81,15 @@ namespace Iceberg {
 		memcpy_s(mem, bufferSize, vertices.data(), bufferSize);
 		stagingBuffer.Unmap();
 		stagingBuffer.TransferBuffer(vertexBuffer);
+
+		bufferSize = sizeof(uint32_t) * indices.size();
+		indexBuffer = new IndexBuffer(device, (uint32_t)indices.size());
+		stagingBuffer.Resize(bufferSize);
+		stagingBuffer.Bind();
+		stagingBuffer.Map(mem);
+		memcpy_s(mem, bufferSize, indices.data(), bufferSize);
+		stagingBuffer.Unmap();
+		stagingBuffer.TransferBuffer(indexBuffer);
 
 		CreateCommandBuffer();
 		CreateSyncObjects();
@@ -953,6 +963,7 @@ namespace Iceberg {
 		VkBuffer vertexBuffers[] { *vertexBuffer };
 		VkDeviceSize offsets[] { 0 };
 		vkCmdBindVertexBuffers(commandBuffer, 0, 1, vertexBuffers, offsets);
+		vkCmdBindIndexBuffer(commandBuffer, *indexBuffer, offsets[0], VK_INDEX_TYPE_UINT32);
 
 		VkViewport viewport{};
 		viewport.x = 0.0f;
@@ -968,7 +979,7 @@ namespace Iceberg {
 		scissor.extent = swapChainExtent;
 		vkCmdSetScissor(commandBuffer, 0, 1, &scissor);
 
-		vkCmdDraw(commandBuffer, 3, 1, 0, 0);
+		vkCmdDrawIndexed(commandBuffer, indices.size(), 1, 0, 0, 0);
 
 		//ImGui_ImplVulkan_RenderDrawData(ImGui::GetDrawData(), commandBuffer, VK_NULL_HANDLE);
 
@@ -1042,6 +1053,7 @@ namespace Iceberg {
 	void VK::CleanupVulkan()
 	{
 		delete vertexBuffer;
+		delete indexBuffer;
 
 		for (int i = 0; i < MAX_FRAMES_IN_FLIGHT; i++)
 		{

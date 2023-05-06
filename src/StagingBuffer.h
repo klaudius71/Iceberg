@@ -13,6 +13,8 @@ namespace Iceberg {
 		StagingBuffer& operator=(const StagingBuffer&) = delete;
 		~StagingBuffer() = default;
 
+		void Resize(VkDeviceSize size);
+
 		void TransferBuffer(const Buffer* const buf) const;
 	};
 

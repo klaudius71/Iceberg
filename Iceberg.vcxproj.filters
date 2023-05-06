@@ -81,6 +81,9 @@
     <ClCompile Include="src\StagingBuffer.cpp">
       <Filter>Source Files\GraphicsContext\Buffers</Filter>
     </ClCompile>
+    <ClCompile Include="src\IndexBuffer.cpp">
+      <Filter>Source Files\GraphicsContext\Buffers</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="src\App.h">
@@ -124,6 +127,9 @@
     </ClInclude>
     <ClInclude Include="src\Vertex.h">
       <Filter>Source Files\GraphicsContext</Filter>
+    </ClInclude>
+    <ClInclude Include="src\IndexBuffer.h">
+      <Filter>Source Files\GraphicsContext\Buffers</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
