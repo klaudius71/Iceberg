@@ -72,6 +72,12 @@
     <ClCompile Include="src\VertexBuffer.cpp">
       <Filter>Source Files\GraphicsContext\Buffers</Filter>
     </ClCompile>
+    <ClCompile Include="src\Buffer.cpp">
+      <Filter>Source Files\GraphicsContext\Buffers</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Vertex.cpp">
+      <Filter>Source Files\GraphicsContext</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="src\App.h">
@@ -106,6 +112,15 @@
     </ClInclude>
     <ClInclude Include="src\VertexBuffer.h">
       <Filter>Source Files\GraphicsContext\Buffers</Filter>
+    </ClInclude>
+    <ClInclude Include="src\StagingBuffer.h">
+      <Filter>Source Files\GraphicsContext\Buffers</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Buffer.h">
+      <Filter>Source Files\GraphicsContext\Buffers</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Vertex.h">
+      <Filter>Source Files\GraphicsContext</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

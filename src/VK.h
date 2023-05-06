@@ -1,6 +1,8 @@
 #ifndef _VK
 #define _VK
 
+#include "Vertex.h"
+
 namespace Iceberg {
 
 #ifdef _DEBUG
@@ -42,11 +44,12 @@ namespace Iceberg {
 		{
 			uint32_t graphicsFamily;
 			uint32_t computeFamily;
+			//uint32_t transferFamily;
 			uint32_t presentFamily;
 			bool graphicsFamilyExists = false;
 			bool computeFamilyExists = false;
 			bool presentFamilyExists = false;
-		};
+		};// queueFamilies;
 		QueueFamilyIndices FindQueueFamilies(VkPhysicalDevice device);
 
 		// Swapchain
@@ -130,6 +133,13 @@ namespace Iceberg {
 		VkFence inFlightFence[MAX_FRAMES_IN_FLIGHT];
 
 		uint32_t currentFrame = 0;
+
+		const std::vector<Vertex> vertices
+		{
+			{ {  0.0f, -0.5f, 0.0f }, { 1.0f, 0.0f, 0.0f } },
+			{ {  0.5f,  0.5f, 0.0f }, { 0.0f, 1.0f, 0.0f } },
+			{ { -0.5f,  0.5f, 0.0f }, { 0.0f, 0.0f, 1.0f } }
+		};
 
 	public:
 		static void Initialize();

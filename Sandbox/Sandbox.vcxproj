@@ -60,6 +60,7 @@
       <AdditionalIncludeDirectories>$(SolutionDir)src;$(VULKAN_SDK)\Include;$(SolutionDir)external\glm\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <DisableSpecificWarnings>
       </DisableSpecificWarnings>
+      <MultiProcessorCompilation>true</MultiProcessorCompilation>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>

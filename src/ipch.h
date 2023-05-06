@@ -13,6 +13,7 @@
 #include <algorithm>
 #include <cstdint>
 #include <fstream>
+#include <array>
 
 #include "vulkan/vulkan.h"
 #include "GLFW/glfw3.h"
