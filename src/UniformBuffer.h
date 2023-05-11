@@ -15,6 +15,7 @@ namespace Iceberg {
 
 		VkDescriptorSetLayout GetDescriptorSetLayout() const;
 
+		VkBuffer GetBuffer() const;
 		void* GetDataPointer() const;
 
 	private:

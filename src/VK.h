@@ -86,6 +86,8 @@ namespace Iceberg {
 
 		VkShaderModule CreateShaderModule(const std::vector<uint8_t>& code);
 		void CreateRenderPass();
+		void CreateDescriptorPool();
+		void CreateDescriptorSets();
 		void CreateGraphicsPipeline();
 
 		void CreateFramebuffers();
@@ -126,13 +128,14 @@ namespace Iceberg {
 		VkPipelineLayout pipelineLayout;
 		VertexBuffer* vertexBuffer;
 		IndexBuffer* indexBuffer;
-		UniformBuffer* uniformBuffers[MAX_FRAMES_IN_FLIGHT];
+		UniformBuffer* uniformBuffers;
+		VkDescriptorPool descriptorPool;
+		VkDescriptorSet descriptorSets[MAX_FRAMES_IN_FLIGHT];
 		VkPipeline graphicsPipeline;
 
 		std::vector<VkFramebuffer> swapChainFramebuffers;
 		VkCommandPool commandPool;
 		VkCommandBuffer commandBuffer[MAX_FRAMES_IN_FLIGHT];
-
 		VkSemaphore imageAvailableSemaphore[MAX_FRAMES_IN_FLIGHT];
 		VkSemaphore renderFinishedSemaphore[MAX_FRAMES_IN_FLIGHT];
 		VkFence inFlightFence[MAX_FRAMES_IN_FLIGHT];

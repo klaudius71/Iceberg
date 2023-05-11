@@ -70,17 +70,12 @@ namespace Iceberg {
 		CreateImageViews();
 		CreateRenderPass();
 
-		uniformBuffers[0] = new UniformBuffer[2]
-		{
-			{ device, sizeof(glm::mat4) * 2, 0 },
-			{ device, sizeof(glm::mat4)	   , 1 }
-		};
-		uniformBuffers[1] = new UniformBuffer[2]
-		{
-			{ device, sizeof(glm::mat4) * 2, 0 },
-			{ device, sizeof(glm::mat4)	   , 1 }
-		};
+		uniformBuffers = (UniformBuffer*)malloc(sizeof(UniformBuffer) * 2);
+		new(uniformBuffers) UniformBuffer(device, sizeof(glm::mat4) * 3, 0 );
+		new(&uniformBuffers[1]) UniformBuffer(device, sizeof(glm::mat4) * 3, 0);
 
+		CreateDescriptorPool();
+		CreateDescriptorSets();
 		CreateGraphicsPipeline();
 		CreateFramebuffers();
 		CreateCommandPool();
@@ -637,6 +632,58 @@ namespace Iceberg {
 		if (res != VK_SUCCESS)
 			throw std::exception("Failed to create render pass!");
 	}
+	void VK::CreateDescriptorPool()
+	{
+		VkDescriptorPoolSize poolSize{};
+		poolSize.type = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
+		poolSize.descriptorCount = (uint32_t)MAX_FRAMES_IN_FLIGHT;
+
+		VkDescriptorPoolCreateInfo poolInfo{};
+		poolInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_POOL_CREATE_INFO;
+		poolInfo.poolSizeCount = 1;
+		poolInfo.pPoolSizes = &poolSize;
+		poolInfo.maxSets = (uint32_t)MAX_FRAMES_IN_FLIGHT;
+		
+		VkResult res = vkCreateDescriptorPool(device, &poolInfo, nullptr, &descriptorPool);
+		if (res != VK_SUCCESS)
+			throw std::exception("Failed to create uniform buffer descriptor pool!");
+	}
+	void VK::CreateDescriptorSets()
+	{
+		std::vector<VkDescriptorSetLayout> layouts(MAX_FRAMES_IN_FLIGHT, uniformBuffers->GetDescriptorSetLayout());
+		VkDescriptorSetAllocateInfo allocInfo{};
+		allocInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_ALLOCATE_INFO;
+		allocInfo.descriptorPool = descriptorPool;
+		allocInfo.descriptorSetCount = (uint32_t)MAX_FRAMES_IN_FLIGHT;
+		allocInfo.pSetLayouts = layouts.data();
+
+		VkResult res;
+		res = vkAllocateDescriptorSets(device, &allocInfo, descriptorSets);
+		if (res != VK_SUCCESS)
+			throw std::exception("Failed to allocate uniform buffer descriptor sets!");
+
+		VkDescriptorBufferInfo bufferInfo{};
+		bufferInfo.offset = 0;
+		bufferInfo.range = sizeof(glm::mat4) * 3;
+		for (size_t i = 0; i < MAX_FRAMES_IN_FLIGHT; i++)
+		{
+			bufferInfo.buffer = uniformBuffers[i].GetBuffer();
+
+			VkWriteDescriptorSet descriptorWrite{};
+			descriptorWrite.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
+			descriptorWrite.dstSet = descriptorSets[i];
+			descriptorWrite.dstBinding = 0;
+			descriptorWrite.dstArrayElement = 0;
+			descriptorWrite.descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
+			descriptorWrite.descriptorCount = 1;
+			descriptorWrite.pBufferInfo = &bufferInfo;
+			descriptorWrite.pImageInfo = nullptr;
+			descriptorWrite.pTexelBufferView = nullptr;
+			vkUpdateDescriptorSets(device, 1, &descriptorWrite, 0, nullptr);
+		}
+
+		
+	}
 	void VK::CreateGraphicsPipeline()
 	{
 		auto vertShaderCode = ReadBinaryFile("assets/shaders/vert.spv");
@@ -753,8 +800,8 @@ namespace Iceberg {
 		// Pipeline layout creation
 		VkPipelineLayoutCreateInfo pipelineLayoutInfo{};
 		pipelineLayoutInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO;
-		pipelineLayoutInfo.setLayoutCount = 2;
-		const VkDescriptorSetLayout setLayouts[] { uniformBuffers[0][0].GetDescriptorSetLayout(), uniformBuffers[0][1].GetDescriptorSetLayout()};
+		pipelineLayoutInfo.setLayoutCount = 1;
+		const VkDescriptorSetLayout setLayouts[] { uniformBuffers->GetDescriptorSetLayout() };
 		pipelineLayoutInfo.pSetLayouts = setLayouts;
 		pipelineLayoutInfo.pushConstantRangeCount = 0;
 		pipelineLayoutInfo.pPushConstantRanges = nullptr;
@@ -951,19 +998,20 @@ namespace Iceberg {
 
 	void VK::updateUniforms()
 	{
-		static glm::mat4 world(1.0f);
+		auto window = App::GetWindow();
+		static glm::mat4 world(glm::scale(glm::vec3(window->GetWindowHeight() * 0.5f, window->GetWindowHeight() * 0.5f, 1.0f)));
 
-		glm::mat4 cam[] = {
-			glm::perspective(glm::radians(45.0f), (float)App::GetWindow()->GetWindowWidth() / App::GetWindow()->GetWindowHeight(), 0.1f, 1000.0f),
-			glm::lookAt(glm::vec3(0.0f, 0.0f, -1.0f), glm::vec3(0.0f), glm::vec3(0.0f, 1.0f, 0.0f))
+		glm::mat4 matrices[] = {
+			//glm::perspective(glm::radians(45.0f), (float)App::GetWindow()->GetWindowWidth() / App::GetWindow()->GetWindowHeight(), 0.1f, 1000.0f),
+			glm::ortho(-window->GetWindowWidth() * 0.5f, window->GetWindowWidth() * 0.5f, -window->GetWindowHeight() * 0.5f, window->GetWindowHeight() * 0.5f),
+			glm::lookAt(glm::vec3(0.0f, 0.0f, 1.0f), glm::vec3(0.0f), glm::vec3(0.0f, 1.0f, 0.0f)),
+			world
 		};
-		//(cam[0])[1][1] *= -1;
-		void* cam_data = uniformBuffers[currentFrame][0].GetDataPointer();
-		memcpy_s(cam_data, sizeof(glm::mat4) * 2, cam, sizeof(glm::mat4) * 2);
+		//(matrices[0])[1][1] *= -1;
+		void* cam_data = uniformBuffers[currentFrame].GetDataPointer();
+		memcpy_s(cam_data, sizeof(glm::mat4) * 3, matrices, sizeof(glm::mat4) * 3);
 
-		void* world_data = uniformBuffers[currentFrame][1].GetDataPointer();
-		world *= glm::rotate(0.001f, glm::vec3(1.0f, 0.0f, 0.0f));
-		memcpy_s(world_data, sizeof(glm::mat4), &world, sizeof(glm::mat4));
+		world *= glm::rotate(.01f, glm::vec3(0.0f, 0.0f, 1.0f));
 	}
 	void VK::recordCommandBuffer(VkCommandBuffer commandBuffer, uint32_t imageIndex)
 	{
@@ -994,6 +1042,8 @@ namespace Iceberg {
 		VkDeviceSize offsets[] { 0 };
 		vkCmdBindVertexBuffers(commandBuffer, 0, 1, vertexBuffers, offsets);
 		vkCmdBindIndexBuffer(commandBuffer, indexBuffer->GetVkBuffer(), offsets[0], VK_INDEX_TYPE_UINT32);
+
+		vkCmdBindDescriptorSets(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, pipelineLayout, 0, 1, &descriptorSets[currentFrame], 0, nullptr);
 
 		VkViewport viewport{};
 		viewport.x = 0.0f;
@@ -1088,8 +1138,13 @@ namespace Iceberg {
 		delete indexBuffer;
 
 		for (int i = 0; i < MAX_FRAMES_IN_FLIGHT; i++)
+			uniformBuffers[i].~UniformBuffer();
+		free(uniformBuffers);
+
+		vkDestroyDescriptorPool(device, descriptorPool, nullptr);
+
+		for (int i = 0; i < MAX_FRAMES_IN_FLIGHT; i++)
 		{
-			delete[] uniformBuffers[i];
 			vkDestroySemaphore(device, imageAvailableSemaphore[i], nullptr);
 			vkDestroySemaphore(device, renderFinishedSemaphore[i], nullptr);
 			vkDestroyFence(device, inFlightFence[i], nullptr);

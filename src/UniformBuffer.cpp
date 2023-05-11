@@ -38,6 +38,11 @@ namespace Iceberg {
 		return descriptorSetLayout;
 	}
 
+	VkBuffer UniformBuffer::GetBuffer() const
+	{
+		return buffer.GetVkBuffer();
+	}
+
 	void* UniformBuffer::GetDataPointer() const
 	{
 		return dataPtr;
