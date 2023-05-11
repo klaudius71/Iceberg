@@ -84,6 +84,9 @@
     <ClCompile Include="src\IndexBuffer.cpp">
       <Filter>Source Files\GraphicsContext\Buffers</Filter>
     </ClCompile>
+    <ClCompile Include="src\UniformBuffer.cpp">
+      <Filter>Source Files\GraphicsContext\Buffers</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="src\App.h">
@@ -129,6 +132,9 @@
       <Filter>Source Files\GraphicsContext</Filter>
     </ClInclude>
     <ClInclude Include="src\IndexBuffer.h">
+      <Filter>Source Files\GraphicsContext\Buffers</Filter>
+    </ClInclude>
+    <ClInclude Include="src\UniformBuffer.h">
       <Filter>Source Files\GraphicsContext\Buffers</Filter>
     </ClInclude>
   </ItemGroup>

@@ -5,6 +5,7 @@
 #include "VertexBuffer.h"
 #include "IndexBuffer.h"
 #include "StagingBuffer.h"
+#include "UniformBuffer.h"
 
 namespace Iceberg {
 
@@ -68,6 +69,18 @@ namespace Iceberg {
 		CreateSwapChain();
 		CreateImageViews();
 		CreateRenderPass();
+
+		uniformBuffers[0] = new UniformBuffer[2]
+		{
+			{ device, sizeof(glm::mat4) * 2, 0 },
+			{ device, sizeof(glm::mat4)	   , 1 }
+		};
+		uniformBuffers[1] = new UniformBuffer[2]
+		{
+			{ device, sizeof(glm::mat4) * 2, 0 },
+			{ device, sizeof(glm::mat4)	   , 1 }
+		};
+
 		CreateGraphicsPipeline();
 		CreateFramebuffers();
 		CreateCommandPool();
@@ -740,8 +753,9 @@ namespace Iceberg {
 		// Pipeline layout creation
 		VkPipelineLayoutCreateInfo pipelineLayoutInfo{};
 		pipelineLayoutInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO;
-		pipelineLayoutInfo.setLayoutCount = 0;
-		pipelineLayoutInfo.pSetLayouts = nullptr;
+		pipelineLayoutInfo.setLayoutCount = 2;
+		const VkDescriptorSetLayout setLayouts[] { uniformBuffers[0][0].GetDescriptorSetLayout(), uniformBuffers[0][1].GetDescriptorSetLayout()};
+		pipelineLayoutInfo.pSetLayouts = setLayouts;
 		pipelineLayoutInfo.pushConstantRangeCount = 0;
 		pipelineLayoutInfo.pPushConstantRanges = nullptr;
 
@@ -935,6 +949,22 @@ namespace Iceberg {
 		ImGui_ImplGlfw_Shutdown();
 	}
 
+	void VK::updateUniforms()
+	{
+		static glm::mat4 world(1.0f);
+
+		glm::mat4 cam[] = {
+			glm::perspective(glm::radians(45.0f), (float)App::GetWindow()->GetWindowWidth() / App::GetWindow()->GetWindowHeight(), 0.1f, 1000.0f),
+			glm::lookAt(glm::vec3(0.0f, 0.0f, -1.0f), glm::vec3(0.0f), glm::vec3(0.0f, 1.0f, 0.0f))
+		};
+		//(cam[0])[1][1] *= -1;
+		void* cam_data = uniformBuffers[currentFrame][0].GetDataPointer();
+		memcpy_s(cam_data, sizeof(glm::mat4) * 2, cam, sizeof(glm::mat4) * 2);
+
+		void* world_data = uniformBuffers[currentFrame][1].GetDataPointer();
+		world *= glm::rotate(0.001f, glm::vec3(1.0f, 0.0f, 0.0f));
+		memcpy_s(world_data, sizeof(glm::mat4), &world, sizeof(glm::mat4));
+	}
 	void VK::recordCommandBuffer(VkCommandBuffer commandBuffer, uint32_t imageIndex)
 	{
 		VkCommandBufferBeginInfo beginInfo{};
@@ -960,10 +990,10 @@ namespace Iceberg {
 
 		vkCmdBindPipeline(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, graphicsPipeline);
 
-		VkBuffer vertexBuffers[] { *vertexBuffer };
+		VkBuffer vertexBuffers[] { vertexBuffer->GetVkBuffer() };
 		VkDeviceSize offsets[] { 0 };
 		vkCmdBindVertexBuffers(commandBuffer, 0, 1, vertexBuffers, offsets);
-		vkCmdBindIndexBuffer(commandBuffer, *indexBuffer, offsets[0], VK_INDEX_TYPE_UINT32);
+		vkCmdBindIndexBuffer(commandBuffer, indexBuffer->GetVkBuffer(), offsets[0], VK_INDEX_TYPE_UINT32);
 
 		VkViewport viewport{};
 		viewport.x = 0.0f;
@@ -979,7 +1009,7 @@ namespace Iceberg {
 		scissor.extent = swapChainExtent;
 		vkCmdSetScissor(commandBuffer, 0, 1, &scissor);
 
-		vkCmdDrawIndexed(commandBuffer, indices.size(), 1, 0, 0, 0);
+		vkCmdDrawIndexed(commandBuffer, (uint32_t)indices.size(), 1, 0, 0, 0);
 
 		//ImGui_ImplVulkan_RenderDrawData(ImGui::GetDrawData(), commandBuffer, VK_NULL_HANDLE);
 
@@ -991,6 +1021,8 @@ namespace Iceberg {
 	}
 	void VK::drawFrame()
 	{
+		updateUniforms();
+
 		vkWaitForFences(device, 1, &inFlightFence[currentFrame], VK_TRUE, UINT64_MAX);
 
 		uint32_t imageIndex;
@@ -1057,6 +1089,7 @@ namespace Iceberg {
 
 		for (int i = 0; i < MAX_FRAMES_IN_FLIGHT; i++)
 		{
+			delete[] uniformBuffers[i];
 			vkDestroySemaphore(device, imageAvailableSemaphore[i], nullptr);
 			vkDestroySemaphore(device, renderFinishedSemaphore[i], nullptr);
 			vkDestroyFence(device, inFlightFence[i], nullptr);

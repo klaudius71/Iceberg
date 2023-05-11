@@ -11,10 +11,11 @@ namespace Iceberg {
 	constexpr bool ENABLE_VALIDATION_LAYERS = false;
 #endif
 
-	constexpr int MAX_FRAMES_IN_FLIGHT = 1;
+	constexpr int MAX_FRAMES_IN_FLIGHT = 2;
 
 	class VertexBuffer;
 	class IndexBuffer;
+	class UniformBuffer;
 
 	class VK
 	{
@@ -97,6 +98,7 @@ namespace Iceberg {
 		void initializeImGui();
 		void terminateImGui();
 
+		void updateUniforms();
 		void recordCommandBuffer(VkCommandBuffer commandBuffer, uint32_t imageIndex);
 		void drawFrame();
 		void deviceWaitIdle();
@@ -124,6 +126,7 @@ namespace Iceberg {
 		VkPipelineLayout pipelineLayout;
 		VertexBuffer* vertexBuffer;
 		IndexBuffer* indexBuffer;
+		UniformBuffer* uniformBuffers[MAX_FRAMES_IN_FLIGHT];
 		VkPipeline graphicsPipeline;
 
 		std::vector<VkFramebuffer> swapChainFramebuffers;
@@ -138,10 +141,10 @@ namespace Iceberg {
 
 		const std::vector<Vertex> vertices
 		{
-			{{ -0.5f, -0.5f, 0.0f }, {1.0f, 0.0f, 0.0f}},
-			{{  0.5f, -0.5f, 0.0f }, {0.0f, 1.0f, 0.0f}},
-			{{  0.5f,  0.5f, 0.0f }, {0.0f, 0.0f, 1.0f}},
-			{{ -0.5f,  0.5f, 0.0f }, {1.0f, 1.0f, 1.0f}}
+			{{ -0.5f, -0.5f, 0.0f }, { 1.0f, 0.0f, 0.0f }},
+			{{  0.5f, -0.5f, 0.0f }, { 0.0f, 1.0f, 0.0f }},
+			{{  0.5f,  0.5f, 0.0f }, { 0.0f, 0.0f, 1.0f }},
+			{{ -0.5f,  0.5f, 0.0f }, { 1.0f, 1.0f, 1.0f }}
 		};
 		const std::vector<uint32_t> indices
 		{

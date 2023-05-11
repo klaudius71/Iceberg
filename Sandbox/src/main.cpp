@@ -4,7 +4,7 @@
 int main()
 {
 	try {
-		Sandbox* sandbox = new Sandbox(1920, 1080, nullptr);
+		Sandbox* sandbox = new Sandbox(1600, 900, nullptr);
 		sandbox->Run();
 		delete sandbox;
 	}

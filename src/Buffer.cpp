@@ -35,6 +35,15 @@ namespace Iceberg {
 		vkFreeMemory(dev, bufferMemory, nullptr);
 	}
 
+	VkDevice Buffer::GetDevice() const
+	{
+		return dev;
+	}
+
+	VkBuffer Buffer::GetVkBuffer() const
+	{
+		return buffer;
+	}
 	Buffer::operator VkBuffer() const
 	{
 		return buffer;
@@ -52,7 +61,7 @@ namespace Iceberg {
 
 	VkResult Buffer::Map(void*& mem) const
 	{
-		assert(mem && cpuWriteable);
+		assert(cpuWriteable);
 		return vkMapMemory(dev, bufferMemory, 0, size, 0, &mem);
 	}
 	void Buffer::Unmap() const

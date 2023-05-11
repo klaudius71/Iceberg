@@ -143,6 +143,7 @@
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Create</PrecompiledHeader>
     </ClCompile>
     <ClCompile Include="src\StagingBuffer.cpp" />
+    <ClCompile Include="src\UniformBuffer.cpp" />
     <ClCompile Include="src\Vertex.cpp" />
     <ClCompile Include="src\VertexBuffer.cpp" />
     <ClCompile Include="src\VK.cpp" />
@@ -160,6 +161,7 @@
     <ClInclude Include="src\IndexBuffer.h" />
     <ClInclude Include="src\ipch.h" />
     <ClInclude Include="src\StagingBuffer.h" />
+    <ClInclude Include="src\UniformBuffer.h" />
     <ClInclude Include="src\Vertex.h" />
     <ClInclude Include="src\VertexBuffer.h" />
     <ClInclude Include="src\VK.h" />
