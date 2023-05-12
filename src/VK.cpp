@@ -71,12 +71,12 @@ namespace Iceberg {
 		CreateRenderPass();
 
 		cameraUniformBuffers = (UniformBuffer*)malloc(sizeof(UniformBuffer) * 2);
-		new(&cameraUniformBuffers[0]) UniformBuffer(device, sizeof(glm::mat4) * 3);
-		new(&cameraUniformBuffers[1]) UniformBuffer(device, sizeof(glm::mat4) * 3);
+		new(&cameraUniformBuffers[0]) UniformBuffer(device, sizeof(glm::mat4) * 2);
+		new(&cameraUniformBuffers[1]) UniformBuffer(device, sizeof(glm::mat4) * 2);
 
-		//worldUniformBuffers = (UniformBuffer*)malloc(sizeof(UniformBuffer) * 2);
-		//new(&worldUniformBuffers[0]) UniformBuffer(device, sizeof(glm::mat4));
-		//new(&worldUniformBuffers[1]) UniformBuffer(device, sizeof(glm::mat4));
+		worldUniformBuffers = (UniformBuffer*)malloc(sizeof(UniformBuffer) * 2);
+		new(&worldUniformBuffers[0]) UniformBuffer(device, sizeof(glm::mat4));
+		new(&worldUniformBuffers[1]) UniformBuffer(device, sizeof(glm::mat4));
 
 		CreateDescriptorSetLayout();
 		CreateDescriptorPool();
@@ -639,17 +639,22 @@ namespace Iceberg {
 	}
 	void VK::CreateDescriptorSetLayout()
 	{
-		VkDescriptorSetLayoutBinding uboLayoutBinding{};
-		uboLayoutBinding.binding = 0;
-		uboLayoutBinding.descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
-		uboLayoutBinding.descriptorCount = 1;
-		uboLayoutBinding.stageFlags = VK_SHADER_STAGE_ALL_GRAPHICS;
-		uboLayoutBinding.pImmutableSamplers = nullptr;
+		VkDescriptorSetLayoutBinding uboLayoutBinding[2]{};
+		uboLayoutBinding[0].binding = 0;
+		uboLayoutBinding[0].descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
+		uboLayoutBinding[0].descriptorCount = 1;
+		uboLayoutBinding[0].stageFlags = VK_SHADER_STAGE_VERTEX_BIT;
+		uboLayoutBinding[0].pImmutableSamplers = nullptr;
+		uboLayoutBinding[1].binding = 1;
+		uboLayoutBinding[1].descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
+		uboLayoutBinding[1].descriptorCount = 1;
+		uboLayoutBinding[1].stageFlags = VK_SHADER_STAGE_VERTEX_BIT;
+		uboLayoutBinding[1].pImmutableSamplers = nullptr;
 
 		VkDescriptorSetLayoutCreateInfo layoutInfo{};
 		layoutInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_CREATE_INFO;
-		layoutInfo.bindingCount = 1;
-		layoutInfo.pBindings = &uboLayoutBinding;
+		layoutInfo.bindingCount = 2;
+		layoutInfo.pBindings = uboLayoutBinding;
 
 		VkResult res = vkCreateDescriptorSetLayout(device, &layoutInfo, nullptr, &descriptorSetLayout);
 		if (res != VK_SUCCESS)
@@ -659,13 +664,13 @@ namespace Iceberg {
 	{
 		VkDescriptorPoolSize poolSize{};
 		poolSize.type = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
-		poolSize.descriptorCount = (uint32_t)MAX_FRAMES_IN_FLIGHT;
+		poolSize.descriptorCount = (uint32_t)MAX_FRAMES_IN_FLIGHT * 2;
 
 		VkDescriptorPoolCreateInfo poolInfo{};
 		poolInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_POOL_CREATE_INFO;
 		poolInfo.poolSizeCount = 1;
 		poolInfo.pPoolSizes = &poolSize;
-		poolInfo.maxSets = (uint32_t)MAX_FRAMES_IN_FLIGHT;
+		poolInfo.maxSets = (uint32_t)MAX_FRAMES_IN_FLIGHT * 2;
 		
 		VkResult res = vkCreateDescriptorPool(device, &poolInfo, nullptr, &descriptorPool);
 		if (res != VK_SUCCESS)
@@ -685,23 +690,30 @@ namespace Iceberg {
 		if (res != VK_SUCCESS)
 			throw std::exception("Failed to allocate uniform buffer descriptor sets!");
 
-		VkDescriptorBufferInfo bufferInfo{};
-		bufferInfo.offset = 0;
-		bufferInfo.range = sizeof(glm::mat4) * 3;
+		VkDescriptorBufferInfo bufferInfoCam{}, bufferInfoWorld{};
+		bufferInfoCam.offset = 0;
+		bufferInfoCam.range = sizeof(glm::mat4) * 2;
+		bufferInfoWorld.offset = 0;
+		bufferInfoWorld.range = sizeof(glm::mat4);
 		for (size_t i = 0; i < MAX_FRAMES_IN_FLIGHT; i++)
 		{
-			bufferInfo.buffer = cameraUniformBuffers[i].GetBuffer();
-
 			VkWriteDescriptorSet descriptorWrite{};
 			descriptorWrite.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
 			descriptorWrite.dstSet = descriptorSets[i];
-			descriptorWrite.dstBinding = 0;
 			descriptorWrite.dstArrayElement = 0;
 			descriptorWrite.descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
 			descriptorWrite.descriptorCount = 1;
-			descriptorWrite.pBufferInfo = &bufferInfo;
 			descriptorWrite.pImageInfo = nullptr;
 			descriptorWrite.pTexelBufferView = nullptr;
+
+			bufferInfoCam.buffer = cameraUniformBuffers[i].GetBuffer();
+			descriptorWrite.dstBinding = 0;
+			descriptorWrite.pBufferInfo = &bufferInfoCam;
+			vkUpdateDescriptorSets(device, 1, &descriptorWrite, 0, nullptr);
+
+			bufferInfoWorld.buffer = worldUniformBuffers[i].GetBuffer();
+			descriptorWrite.dstBinding = 1;
+			descriptorWrite.pBufferInfo = &bufferInfoWorld;
 			vkUpdateDescriptorSets(device, 1, &descriptorWrite, 0, nullptr);
 		}
 	}
@@ -1025,13 +1037,12 @@ namespace Iceberg {
 			glm::perspective(glm::radians(45.0f), (float)window->GetWindowWidth() / window->GetWindowHeight(), 0.1f, 1000.0f),
 			//glm::ortho(-window->GetWindowWidth() * 0.5f, window->GetWindowWidth() * 0.5f, -window->GetWindowHeight() * 0.5f, window->GetWindowHeight() * 0.5f, 0.0f, 1.0f),
 			glm::lookAt(glm::vec3(0.0f, 0.0f, -2.0f), glm::vec3(0.0f), glm::vec3(0.0f, 1.0f, 0.0f)),
-			world
 		};
 		void* cam_data = cameraUniformBuffers[currentFrame].GetDataPointer();
-		memcpy_s(cam_data, sizeof(glm::mat4) * 3, cam_matrices, sizeof(glm::mat4) * 3);
+		memcpy_s(cam_data, sizeof(glm::mat4) * 2, cam_matrices, sizeof(glm::mat4) * 2);
 		
-		//void* world_data = worldUniformBuffers[currentFrame].GetDataPointer();
-		//memcpy_s(world_data, sizeof(glm::mat4), world_data, sizeof(glm::mat4));
+		void* world_data = worldUniformBuffers[currentFrame].GetDataPointer();
+		memcpy_s(world_data, sizeof(glm::mat4), &world, sizeof(glm::mat4));
 		
 		world *= glm::rotate(.01f, glm::vec3(0.0f, 0.0f, 1.0f));
 
@@ -1165,7 +1176,7 @@ namespace Iceberg {
 		for (int i = 0; i < MAX_FRAMES_IN_FLIGHT; i++)
 		{
 			cameraUniformBuffers[i].~UniformBuffer();
-			//worldUniformBuffers[i].~UniformBuffer();
+			worldUniformBuffers[i].~UniformBuffer();
 		}
 		free(cameraUniformBuffers);
 		free(worldUniformBuffers);
