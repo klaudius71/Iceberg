@@ -1,7 +1,7 @@
 #include "ipch.h"
 #include "StagingBuffer.h"
 #include "VK.h"
-//#include "Texture.h"
+#include "Texture.h"
 
 namespace Iceberg {
 
@@ -54,32 +54,33 @@ namespace Iceberg {
 
 		VK::Helper::EndOneTimeCommand(commandBuffer);
 	}
-	//void StagingBuffer::TransferBuffer(const Texture* const buf) const
-	//{
-	//	assert(buf);
-	//	buf->Bind();
-	//
-	//	VkCommandBuffer commandBuffer = VK::Helper::BeginOneTimeCommand();
-	//
-	//	VkBufferImageCopy region{};
-	//	region.bufferOffset = 0;
-	//	region.bufferRowLength = 0;
-	//	region.bufferImageHeight = 0;
-	//	region.imageSubresource.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
-	//	region.imageSubresource.mipLevel = 0;
-	//	region.imageSubresource.baseArrayLayer = 0;
-	//	region.imageSubresource.layerCount = 1;
-	//	region.imageOffset = { 0, 0, 0 };
-	//	region.imageExtent = 
-	//	{
-	//		buf->GetWidth(),
-	//		buf->GetHeight(),
-	//		1
-	//	};
-	//
-	//	vkCmdCopyBufferToImage(commandBuffer, buffer, buf->GetImage(), VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, 1, &region);
-	//
-	//	VK::Helper::EndOneTimeCommand(commandBuffer);
-	//}
+	void StagingBuffer::TransferBuffer(const Texture* const buf) const
+	{
+		assert(buf);
+		//this->Bind();
+		buf->Bind();
+	
+		VkCommandBuffer commandBuffer = VK::Helper::BeginOneTimeCommand();
+	
+		VkBufferImageCopy region{};
+		region.bufferOffset = 0;
+		region.bufferRowLength = 0;
+		region.bufferImageHeight = 0;
+		region.imageSubresource.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
+		region.imageSubresource.mipLevel = 0;
+		region.imageSubresource.baseArrayLayer = 0;
+		region.imageSubresource.layerCount = 1;
+		region.imageOffset = { 0, 0, 0 };
+		region.imageExtent = 
+		{
+			buf->GetWidth(),
+			buf->GetHeight(),
+			1
+		};
+	
+		vkCmdCopyBufferToImage(commandBuffer, buffer, buf->GetImage(), VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, 1, &region);
+	
+		VK::Helper::EndOneTimeCommand(commandBuffer);
+	}
 
 }

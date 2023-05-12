@@ -33,6 +33,8 @@
 #include "backends/imgui_impl_glfw.h"
 #include "backends/imgui_impl_vulkan.h"
 
+#include "stb_image.h"
+
 //#include "Colors.h"
 
 //#pragma warning(disable : 4005)

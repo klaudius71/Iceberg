@@ -7,7 +7,7 @@
 #include "StagingBuffer.h"
 #include "UniformBuffer.h"
 #include "Pipeline.h"
-//#include "Texture.h"
+#include "Texture.h"
 
 namespace Iceberg {
 
@@ -87,7 +87,7 @@ namespace Iceberg {
 		CreateFramebuffers();
 		CreateCommandPool();
 
-		//crateTexture = new Texture(device, "assets/textures/crate_diffuse.tga");
+		crateTexture = new Texture(device, "assets/textures/crate_diffuse.tga");
 
 		uint64_t bufferSize = sizeof(Vertex) * vertices.size();
 		vertexBuffer = new VertexBuffer(device, bufferSize);
@@ -995,7 +995,7 @@ namespace Iceberg {
 		delete vertexBuffer;
 		delete indexBuffer;
 
-		//delete crateTexture;
+		delete crateTexture;
 
 		vkDestroyDescriptorSetLayout(device, descriptorSetLayout, nullptr);
 
