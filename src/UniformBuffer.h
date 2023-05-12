@@ -8,19 +8,16 @@ namespace Iceberg {
 	class UniformBuffer
 	{
 	public:
-		UniformBuffer(VkDevice device, VkDeviceSize size, const uint32_t bind, VkShaderStageFlags stage_flags = VK_SHADER_STAGE_ALL_GRAPHICS);
+		UniformBuffer(VkDevice device, VkDeviceSize size);
 		UniformBuffer(const UniformBuffer&) = delete;
 		UniformBuffer& operator=(const UniformBuffer&) = delete;
 		~UniformBuffer();
-
-		VkDescriptorSetLayout GetDescriptorSetLayout() const;
 
 		VkBuffer GetBuffer() const;
 		void* GetDataPointer() const;
 
 	private:
 		Buffer buffer;
-		VkDescriptorSetLayout descriptorSetLayout;
 		void* dataPtr;
 	};
 

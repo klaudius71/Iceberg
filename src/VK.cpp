@@ -70,10 +70,15 @@ namespace Iceberg {
 		CreateImageViews();
 		CreateRenderPass();
 
-		uniformBuffers = (UniformBuffer*)malloc(sizeof(UniformBuffer) * 2);
-		new(uniformBuffers) UniformBuffer(device, sizeof(glm::mat4) * 3, 0 );
-		new(&uniformBuffers[1]) UniformBuffer(device, sizeof(glm::mat4) * 3, 0);
+		cameraUniformBuffers = (UniformBuffer*)malloc(sizeof(UniformBuffer) * 2);
+		new(&cameraUniformBuffers[0]) UniformBuffer(device, sizeof(glm::mat4) * 3);
+		new(&cameraUniformBuffers[1]) UniformBuffer(device, sizeof(glm::mat4) * 3);
 
+		//worldUniformBuffers = (UniformBuffer*)malloc(sizeof(UniformBuffer) * 2);
+		//new(&worldUniformBuffers[0]) UniformBuffer(device, sizeof(glm::mat4));
+		//new(&worldUniformBuffers[1]) UniformBuffer(device, sizeof(glm::mat4));
+
+		CreateDescriptorSetLayout();
 		CreateDescriptorPool();
 		CreateDescriptorSets();
 		CreateGraphicsPipeline();
@@ -632,6 +637,24 @@ namespace Iceberg {
 		if (res != VK_SUCCESS)
 			throw std::exception("Failed to create render pass!");
 	}
+	void VK::CreateDescriptorSetLayout()
+	{
+		VkDescriptorSetLayoutBinding uboLayoutBinding{};
+		uboLayoutBinding.binding = 0;
+		uboLayoutBinding.descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
+		uboLayoutBinding.descriptorCount = 1;
+		uboLayoutBinding.stageFlags = VK_SHADER_STAGE_ALL_GRAPHICS;
+		uboLayoutBinding.pImmutableSamplers = nullptr;
+
+		VkDescriptorSetLayoutCreateInfo layoutInfo{};
+		layoutInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_CREATE_INFO;
+		layoutInfo.bindingCount = 1;
+		layoutInfo.pBindings = &uboLayoutBinding;
+
+		VkResult res = vkCreateDescriptorSetLayout(device, &layoutInfo, nullptr, &descriptorSetLayout);
+		if (res != VK_SUCCESS)
+			throw std::exception("Failed to create descriptor set layout!");
+	}
 	void VK::CreateDescriptorPool()
 	{
 		VkDescriptorPoolSize poolSize{};
@@ -650,7 +673,7 @@ namespace Iceberg {
 	}
 	void VK::CreateDescriptorSets()
 	{
-		std::vector<VkDescriptorSetLayout> layouts(MAX_FRAMES_IN_FLIGHT, uniformBuffers->GetDescriptorSetLayout());
+		std::vector<VkDescriptorSetLayout> layouts(MAX_FRAMES_IN_FLIGHT, descriptorSetLayout);
 		VkDescriptorSetAllocateInfo allocInfo{};
 		allocInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_ALLOCATE_INFO;
 		allocInfo.descriptorPool = descriptorPool;
@@ -667,7 +690,7 @@ namespace Iceberg {
 		bufferInfo.range = sizeof(glm::mat4) * 3;
 		for (size_t i = 0; i < MAX_FRAMES_IN_FLIGHT; i++)
 		{
-			bufferInfo.buffer = uniformBuffers[i].GetBuffer();
+			bufferInfo.buffer = cameraUniformBuffers[i].GetBuffer();
 
 			VkWriteDescriptorSet descriptorWrite{};
 			descriptorWrite.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
@@ -681,8 +704,6 @@ namespace Iceberg {
 			descriptorWrite.pTexelBufferView = nullptr;
 			vkUpdateDescriptorSets(device, 1, &descriptorWrite, 0, nullptr);
 		}
-
-		
 	}
 	void VK::CreateGraphicsPipeline()
 	{
@@ -801,8 +822,7 @@ namespace Iceberg {
 		VkPipelineLayoutCreateInfo pipelineLayoutInfo{};
 		pipelineLayoutInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO;
 		pipelineLayoutInfo.setLayoutCount = 1;
-		const VkDescriptorSetLayout setLayouts[] { uniformBuffers->GetDescriptorSetLayout() };
-		pipelineLayoutInfo.pSetLayouts = setLayouts;
+		pipelineLayoutInfo.pSetLayouts = &descriptorSetLayout;
 		pipelineLayoutInfo.pushConstantRangeCount = 0;
 		pipelineLayoutInfo.pPushConstantRanges = nullptr;
 
@@ -999,19 +1019,22 @@ namespace Iceberg {
 	void VK::updateUniforms()
 	{
 		auto window = App::GetWindow();
-		static glm::mat4 world(glm::scale(glm::vec3(window->GetWindowHeight() * 0.5f, window->GetWindowHeight() * 0.5f, 1.0f)));
+		static glm::mat4 world(glm::rotate(glm::radians(60.0f), glm::vec3(-1.0f, 0.0f, 0.0f)));// * glm::scale(glm::vec3(window->GetWindowHeight() * 0.5f, window->GetWindowHeight() * 0.5f, 1.0f)));
 
-		glm::mat4 matrices[] = {
-			//glm::perspective(glm::radians(45.0f), (float)App::GetWindow()->GetWindowWidth() / App::GetWindow()->GetWindowHeight(), 0.1f, 1000.0f),
-			glm::ortho(-window->GetWindowWidth() * 0.5f, window->GetWindowWidth() * 0.5f, -window->GetWindowHeight() * 0.5f, window->GetWindowHeight() * 0.5f),
-			glm::lookAt(glm::vec3(0.0f, 0.0f, 1.0f), glm::vec3(0.0f), glm::vec3(0.0f, 1.0f, 0.0f)),
+		const glm::mat4 cam_matrices[] = {
+			glm::perspective(glm::radians(45.0f), (float)window->GetWindowWidth() / window->GetWindowHeight(), 0.1f, 1000.0f),
+			//glm::ortho(-window->GetWindowWidth() * 0.5f, window->GetWindowWidth() * 0.5f, -window->GetWindowHeight() * 0.5f, window->GetWindowHeight() * 0.5f, 0.0f, 1.0f),
+			glm::lookAt(glm::vec3(0.0f, 0.0f, -2.0f), glm::vec3(0.0f), glm::vec3(0.0f, 1.0f, 0.0f)),
 			world
 		};
-		//(matrices[0])[1][1] *= -1;
-		void* cam_data = uniformBuffers[currentFrame].GetDataPointer();
-		memcpy_s(cam_data, sizeof(glm::mat4) * 3, matrices, sizeof(glm::mat4) * 3);
-
+		void* cam_data = cameraUniformBuffers[currentFrame].GetDataPointer();
+		memcpy_s(cam_data, sizeof(glm::mat4) * 3, cam_matrices, sizeof(glm::mat4) * 3);
+		
+		//void* world_data = worldUniformBuffers[currentFrame].GetDataPointer();
+		//memcpy_s(world_data, sizeof(glm::mat4), world_data, sizeof(glm::mat4));
+		
 		world *= glm::rotate(.01f, glm::vec3(0.0f, 0.0f, 1.0f));
+
 	}
 	void VK::recordCommandBuffer(VkCommandBuffer commandBuffer, uint32_t imageIndex)
 	{
@@ -1137,9 +1160,15 @@ namespace Iceberg {
 		delete vertexBuffer;
 		delete indexBuffer;
 
+		vkDestroyDescriptorSetLayout(device, descriptorSetLayout, nullptr);
+
 		for (int i = 0; i < MAX_FRAMES_IN_FLIGHT; i++)
-			uniformBuffers[i].~UniformBuffer();
-		free(uniformBuffers);
+		{
+			cameraUniformBuffers[i].~UniformBuffer();
+			//worldUniformBuffers[i].~UniformBuffer();
+		}
+		free(cameraUniformBuffers);
+		free(worldUniformBuffers);
 
 		vkDestroyDescriptorPool(device, descriptorPool, nullptr);
 
