@@ -121,6 +121,14 @@ namespace Iceberg {
 	{
 		return image;
 	}
+	VkImageView Texture::GetImageView() const
+	{
+		return imageView;
+	}
+	VkSampler Texture::GetSampler() const
+	{
+		return sampler;
+	}
 	uint32_t Texture::GetWidth() const
 	{
 		return width;

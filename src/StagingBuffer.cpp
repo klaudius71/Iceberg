@@ -58,7 +58,7 @@ namespace Iceberg {
 	{
 		assert(buf);
 		//this->Bind();
-		buf->Bind();
+		//buf->Bind();
 	
 		VkCommandBuffer commandBuffer = VK::Helper::BeginOneTimeCommand();
 	

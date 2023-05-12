@@ -14,6 +14,8 @@ namespace Iceberg {
 		uint32_t GetWidth() const;
 		uint32_t GetHeight() const;
 		VkImage GetImage() const;
+		VkImageView GetImageView() const;
+		VkSampler GetSampler() const;
 
 		void Bind() const;
 
