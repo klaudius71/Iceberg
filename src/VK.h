@@ -16,6 +16,8 @@ namespace Iceberg {
 	class VertexBuffer;
 	class IndexBuffer;
 	class UniformBuffer;
+	class Pipeline;
+	class Texture;
 
 	class VK
 	{
@@ -40,7 +42,6 @@ namespace Iceberg {
 			void* pUserData);
 		static VkResult CreateDebugUtilsMessengerEXT(VkInstance inst, const VkDebugUtilsMessengerCreateInfoEXT* pCreateInfo, const VkAllocationCallbacks* pAllocator, VkDebugUtilsMessengerEXT* pDebugMessenger);
 		static void DestroyDebugUtilsMessengerEXT(VkInstance inst, VkDebugUtilsMessengerEXT debugMessenger, const VkAllocationCallbacks* pAllocator);
-		static std::vector<uint8_t> ReadBinaryFile(const std::string& filename);
 
 		struct QueueFamilyIndices
 		{
@@ -84,7 +85,6 @@ namespace Iceberg {
 
 		void CreateSurface();
 
-		VkShaderModule CreateShaderModule(const std::vector<uint8_t>& code);
 		void CreateRenderPass();
 		void CreateDescriptorSetLayout();
 		void CreateDescriptorPool();
@@ -126,7 +126,6 @@ namespace Iceberg {
 		std::vector<VkImageView> swapChainImageViews;
 
 		VkRenderPass renderPass;
-		VkPipelineLayout pipelineLayout;
 		VertexBuffer* vertexBuffer;
 		IndexBuffer* indexBuffer;
 		VkDescriptorSetLayout descriptorSetLayout;
@@ -134,9 +133,7 @@ namespace Iceberg {
 		UniformBuffer* worldUniformBuffers;
 		VkDescriptorPool descriptorPool;
 		VkDescriptorSet descriptorSets[MAX_FRAMES_IN_FLIGHT];
-		//VkDescriptorSet cameraDescriptorSets[MAX_FRAMES_IN_FLIGHT];
-		//VkDescriptorSet worldDescriptorSets[MAX_FRAMES_IN_FLIGHT];
-		VkPipeline graphicsPipeline;
+		Pipeline* graphicsPipeline;
 
 		std::vector<VkFramebuffer> swapChainFramebuffers;
 		VkCommandPool commandPool;
@@ -160,6 +157,8 @@ namespace Iceberg {
 			2, 3, 0
 		};
 
+		Texture* crateTexture;
+
 	public:
 		static void Initialize();
 		static VkInstance GetVkInstance();
@@ -172,6 +171,12 @@ namespace Iceberg {
 		static void DrawFrame() { Instance().drawFrame(); }
 		static void DeviceWaitIdle() { Instance().deviceWaitIdle(); }
 		static void Terminate();
+
+		struct Helper
+		{
+			static VkCommandBuffer BeginOneTimeCommand();
+			static void EndOneTimeCommand(VkCommandBuffer commandBuffer);
+		};
 	};
 
 }

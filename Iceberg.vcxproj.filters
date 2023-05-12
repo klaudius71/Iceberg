@@ -28,11 +28,14 @@
     <Filter Include="Shaders">
       <UniqueIdentifier>{4d8dd6a7-f898-4676-9335-f7550b9cb7bd}</UniqueIdentifier>
     </Filter>
-    <Filter Include="Source Files\GraphicsContext\Shader">
-      <UniqueIdentifier>{548233de-f289-4a8b-82d0-fc281afc1a04}</UniqueIdentifier>
-    </Filter>
     <Filter Include="Source Files\GraphicsContext\Buffers">
       <UniqueIdentifier>{b4ee3c8d-7b5c-48f5-bb09-35bcb0f69112}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\GraphicsContext\Pipeline">
+      <UniqueIdentifier>{548233de-f289-4a8b-82d0-fc281afc1a04}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\GraphicsContext\Texture">
+      <UniqueIdentifier>{50a56f31-e605-4c75-8dc7-8a6fac2d5a35}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
   <ItemGroup>
@@ -87,6 +90,12 @@
     <ClCompile Include="src\UniformBuffer.cpp">
       <Filter>Source Files\GraphicsContext\Buffers</Filter>
     </ClCompile>
+    <ClCompile Include="src\Pipeline.cpp">
+      <Filter>Source Files\GraphicsContext\Pipeline</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Texture.cpp">
+      <Filter>Source Files\GraphicsContext\Texture</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="src\App.h">
@@ -136,6 +145,12 @@
     </ClInclude>
     <ClInclude Include="src\UniformBuffer.h">
       <Filter>Source Files\GraphicsContext\Buffers</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Pipeline.h">
+      <Filter>Source Files\GraphicsContext\Pipeline</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Texture.h">
+      <Filter>Source Files\GraphicsContext\Texture</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

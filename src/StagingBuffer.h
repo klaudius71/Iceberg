@@ -5,6 +5,8 @@
 
 namespace Iceberg {
 
+	class Texture;
+
 	class StagingBuffer : public Buffer
 	{
 	public:
@@ -16,6 +18,7 @@ namespace Iceberg {
 		void Resize(VkDeviceSize size);
 
 		void TransferBuffer(const Buffer* const buf) const;
+		void TransferBuffer(const Texture* const buf) const;
 	};
 
 }

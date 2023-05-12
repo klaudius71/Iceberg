@@ -1,6 +1,7 @@
 #include "ipch.h"
 #include "StagingBuffer.h"
 #include "VK.h"
+//#include "Texture.h"
 
 namespace Iceberg {
 
@@ -45,43 +46,40 @@ namespace Iceberg {
 		assert(buf);
 		buf->Bind();
 
-		VkCommandPool commandPool = VK::GetCommandPool();
-
-		VkCommandBufferAllocateInfo allocInfo{};
-		allocInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO;
-		allocInfo.level = VK_COMMAND_BUFFER_LEVEL_PRIMARY;
-		allocInfo.commandPool = commandPool;
-		allocInfo.commandBufferCount = 1;
-
-		VkCommandBuffer commandBuffer;
-		VkResult res = vkAllocateCommandBuffers(dev, &allocInfo, &commandBuffer);
-		if (res != VK_SUCCESS)
-			throw std::exception("Failed to allocate command buffer!");
-
-		VkCommandBufferBeginInfo beginInfo{};
-		beginInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
-		beginInfo.flags = VK_COMMAND_BUFFER_USAGE_ONE_TIME_SUBMIT_BIT;
-
-		res = vkBeginCommandBuffer(commandBuffer, &beginInfo);
-		if (res != VK_SUCCESS)
-			throw std::exception("Failed to begin recording command buffer!");
+		VkCommandBuffer commandBuffer = VK::Helper::BeginOneTimeCommand();
 
 		VkBufferCopy copyRegion{};
 		copyRegion.size = size;
 		vkCmdCopyBuffer(commandBuffer, buffer, *buf, 1, &copyRegion);
 
-		vkEndCommandBuffer(commandBuffer);
-
-		VkSubmitInfo submitInfo{};
-		submitInfo.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
-		submitInfo.commandBufferCount = 1;
-		submitInfo.pCommandBuffers = &commandBuffer;
-
-		VkQueue transferQueue = VK::GetTransferQueue();
-		vkQueueSubmit(transferQueue, 1, &submitInfo, VK_NULL_HANDLE);
-		vkQueueWaitIdle(transferQueue);
-
-		vkFreeCommandBuffers(dev, commandPool, 1, &commandBuffer);
+		VK::Helper::EndOneTimeCommand(commandBuffer);
 	}
+	//void StagingBuffer::TransferBuffer(const Texture* const buf) const
+	//{
+	//	assert(buf);
+	//	buf->Bind();
+	//
+	//	VkCommandBuffer commandBuffer = VK::Helper::BeginOneTimeCommand();
+	//
+	//	VkBufferImageCopy region{};
+	//	region.bufferOffset = 0;
+	//	region.bufferRowLength = 0;
+	//	region.bufferImageHeight = 0;
+	//	region.imageSubresource.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
+	//	region.imageSubresource.mipLevel = 0;
+	//	region.imageSubresource.baseArrayLayer = 0;
+	//	region.imageSubresource.layerCount = 1;
+	//	region.imageOffset = { 0, 0, 0 };
+	//	region.imageExtent = 
+	//	{
+	//		buf->GetWidth(),
+	//		buf->GetHeight(),
+	//		1
+	//	};
+	//
+	//	vkCmdCopyBufferToImage(commandBuffer, buffer, buf->GetImage(), VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, 1, &region);
+	//
+	//	VK::Helper::EndOneTimeCommand(commandBuffer);
+	//}
 
 }
