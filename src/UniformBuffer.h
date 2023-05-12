@@ -14,10 +14,12 @@ namespace Iceberg {
 		~UniformBuffer();
 
 		VkBuffer GetBuffer() const;
-		void* GetDataPointer() const;
+
+		void SendData(const void* data, uint64_t size) const;
 
 	private:
 		Buffer buffer;
+		uint64_t bufferSize;
 		void* dataPtr;
 	};
 

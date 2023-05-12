@@ -891,11 +891,9 @@ namespace Iceberg {
 			//glm::ortho(-window->GetWindowWidth() * 0.5f, window->GetWindowWidth() * 0.5f, -window->GetWindowHeight() * 0.5f, window->GetWindowHeight() * 0.5f, 0.0f, 1.0f),
 			glm::lookAt(glm::vec3(0.0f, 0.0f, -2.0f), glm::vec3(0.0f), glm::vec3(0.0f, 1.0f, 0.0f)),
 		};
-		void* cam_data = cameraUniformBuffers[currentFrame].GetDataPointer();
-		memcpy_s(cam_data, sizeof(glm::mat4) * 2, cam_matrices, sizeof(glm::mat4) * 2);
-		
-		void* world_data = worldUniformBuffers[currentFrame].GetDataPointer();
-		memcpy_s(world_data, sizeof(glm::mat4), &world, sizeof(glm::mat4));
+
+		cameraUniformBuffers[currentFrame].SendData(cam_matrices, sizeof(glm::mat4) * 2);
+		worldUniformBuffers[currentFrame].SendData(&world, sizeof(glm::mat4));
 		
 		world *= glm::rotate(.01f, glm::vec3(0.0f, 0.0f, 1.0f));
 
