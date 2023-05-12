@@ -388,7 +388,8 @@ namespace Iceberg {
 			&& queueFamilies.computeFamilyExists
 			&& queueFamilies.presentFamilyExists
 			&& extensionsSupported
-			&& swapChainAdequate;
+			&& swapChainAdequate
+			&& deviceFeatures.samplerAnisotropy == VK_TRUE;
 	}
 
 	bool VK::CheckValidationLayerSupport() const
@@ -533,6 +534,7 @@ namespace Iceberg {
 		}
 
 		VkPhysicalDeviceFeatures deviceFeatures{};
+		deviceFeatures.samplerAnisotropy = VK_TRUE;
 
 		VkDeviceCreateInfo createInfo{};
 		createInfo.sType = VK_STRUCTURE_TYPE_DEVICE_CREATE_INFO;

@@ -65,6 +65,7 @@ namespace Iceberg {
 		stagingBuffer.TransferBuffer(this);
 		transitionImageLayout(imageInfo.format, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
 	
+		// Image view
 		VkImageViewCreateInfo viewInfo{};
 		viewInfo.sType = VK_STRUCTURE_TYPE_IMAGE_VIEW_CREATE_INFO;
 		viewInfo.image = image;
@@ -79,10 +80,34 @@ namespace Iceberg {
 		res = vkCreateImageView(device, &viewInfo, nullptr, &imageView);
 		if (res != VK_SUCCESS)
 			throw std::exception("Failed to create texture image view!");
+
+		// Sampler
+		VkSamplerCreateInfo samplerInfo{};
+		samplerInfo.sType = VK_STRUCTURE_TYPE_SAMPLER_CREATE_INFO;
+		samplerInfo.minFilter = VK_FILTER_LINEAR;
+		samplerInfo.magFilter = VK_FILTER_LINEAR;
+		samplerInfo.addressModeU = VK_SAMPLER_ADDRESS_MODE_REPEAT;
+		samplerInfo.addressModeV = VK_SAMPLER_ADDRESS_MODE_REPEAT;
+		samplerInfo.addressModeW = VK_SAMPLER_ADDRESS_MODE_REPEAT;
+		samplerInfo.anisotropyEnable = VK_TRUE;
+		samplerInfo.maxAnisotropy = 16.0f; // Query for this
+		samplerInfo.borderColor = VK_BORDER_COLOR_INT_OPAQUE_BLACK;
+		samplerInfo.unnormalizedCoordinates = VK_FALSE;
+		samplerInfo.compareEnable = VK_FALSE;
+		samplerInfo.compareOp = VK_COMPARE_OP_ALWAYS;
+		samplerInfo.mipmapMode = VK_SAMPLER_MIPMAP_MODE_LINEAR;
+		samplerInfo.mipLodBias = 0.0f;
+		samplerInfo.minLod = 0.0f;
+		samplerInfo.maxLod = 0.0f;
+
+		res = vkCreateSampler(device, &samplerInfo, nullptr, &sampler);
+		if (res != VK_SUCCESS)
+			throw std::exception("Failed to create texture sampler!");
 	}
 
 	Texture::~Texture()
 	{
+		vkDestroySampler(device, sampler, nullptr);
 		vkDestroyImageView(device, imageView, nullptr);
 		vkDestroyImage(device, image, nullptr);
 		vkFreeMemory(device, imageMemory, nullptr);

@@ -26,6 +26,7 @@ namespace Iceberg {
 		VkImage image;
 		VkDeviceMemory imageMemory;
 		VkImageView imageView;
+		VkSampler sampler;
 	};
 
 }
