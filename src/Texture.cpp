@@ -64,10 +64,26 @@ namespace Iceberg {
 		transitionImageLayout(imageInfo.format, VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL);
 		stagingBuffer.TransferBuffer(this);
 		transitionImageLayout(imageInfo.format, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
+	
+		VkImageViewCreateInfo viewInfo{};
+		viewInfo.sType = VK_STRUCTURE_TYPE_IMAGE_VIEW_CREATE_INFO;
+		viewInfo.image = image;
+		viewInfo.viewType = VK_IMAGE_VIEW_TYPE_2D;
+		viewInfo.format = VK_FORMAT_R8G8B8A8_UNORM;
+		viewInfo.subresourceRange.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
+		viewInfo.subresourceRange.baseMipLevel = 0;
+		viewInfo.subresourceRange.levelCount = 1;
+		viewInfo.subresourceRange.baseArrayLayer = 0;
+		viewInfo.subresourceRange.layerCount = 1;
+
+		res = vkCreateImageView(device, &viewInfo, nullptr, &imageView);
+		if (res != VK_SUCCESS)
+			throw std::exception("Failed to create texture image view!");
 	}
 
 	Texture::~Texture()
 	{
+		vkDestroyImageView(device, imageView, nullptr);
 		vkDestroyImage(device, image, nullptr);
 		vkFreeMemory(device, imageMemory, nullptr);
 	}

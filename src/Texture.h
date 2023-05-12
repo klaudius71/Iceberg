@@ -25,6 +25,7 @@ namespace Iceberg {
 		uint32_t height;		
 		VkImage image;
 		VkDeviceMemory imageMemory;
+		VkImageView imageView;
 	};
 
 }
