@@ -2,6 +2,7 @@
 #define _VK
 
 #include "Vertex.h"
+#include "IcebergCore.h"
 
 namespace Iceberg {
 
@@ -10,8 +11,6 @@ namespace Iceberg {
 #else
 	constexpr bool ENABLE_VALIDATION_LAYERS = false;
 #endif
-
-	constexpr int MAX_FRAMES_IN_FLIGHT = 2;
 
 	class VertexBuffer;
 	class IndexBuffer;
@@ -86,7 +85,7 @@ namespace Iceberg {
 		void CreateSurface();
 
 		void CreateRenderPass();
-		void CreateDescriptorSetLayout();
+		void CreateDescriptorSetLayouts();
 		void CreateDescriptorPool();
 		void CreateDescriptorSets();
 		void CreateGraphicsPipeline();
@@ -128,7 +127,8 @@ namespace Iceberg {
 		VkRenderPass renderPass;
 		VertexBuffer* vertexBuffer;
 		IndexBuffer* indexBuffer;
-		VkDescriptorSetLayout descriptorSetLayout;
+		VkDescriptorSetLayout descriptorSetLayoutUniform;
+		VkDescriptorSetLayout descriptorSetLayoutSampler;
 		UniformBuffer* cameraUniformBuffers;
 		UniformBuffer* worldUniformBuffers;
 		VkDescriptorPool descriptorPool;
@@ -168,6 +168,9 @@ namespace Iceberg {
 		static uint32_t FindMemoryType(uint32_t typeFilter, VkMemoryPropertyFlags properties);
 		static VkCommandPool GetCommandPool();
 		static VkQueue GetTransferQueue();
+		static VkDescriptorPool GetDescriptorPool();
+		static uint32_t GetCurrentFrame();
+		static VkDescriptorSetLayout GetDescriptorSetLayoutSampler();
 		static void DrawFrame() { Instance().drawFrame(); }
 		static void DeviceWaitIdle() { Instance().deviceWaitIdle(); }
 		static void Terminate();

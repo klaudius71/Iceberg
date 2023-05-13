@@ -2,6 +2,7 @@
 #include "App.h"
 #include "Window.h"
 #include "VK.h"
+#include "Texture.h"
 
 namespace Iceberg {
 
@@ -24,6 +25,8 @@ namespace Iceberg {
 
 	void App::Run()
 	{
+		try {
+
 		Start();
 
 		// Setup Dear ImGui context
@@ -31,7 +34,7 @@ namespace Iceberg {
 		ImGui::CreateContext();
 		ImGuiIO& io = ImGui::GetIO(); (void)io;
 		io.ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard;       // Enable Keyboard Controls
-		io.ConfigFlags |= ImGuiConfigFlags_DockingEnable;           // Enable Docking
+		//io.ConfigFlags |= ImGuiConfigFlags_DockingEnable;           // Enable Docking
 		io.ConfigFlags |= ImGuiConfigFlags_ViewportsEnable;         // Enable Multi-Viewport / Platform Windows
 		// io.ConfigViewportsNoAutoMerge = true;
 		// io.ConfigViewportsNoTaskBarIcon = true;
@@ -70,7 +73,7 @@ namespace Iceberg {
 			ImGui_ImplVulkan_NewFrame();
 			ImGui_ImplGlfw_NewFrame();
 			ImGui::NewFrame();
-			ImGui::DockSpaceOverViewport(ImGui::GetMainViewport());
+			//ImGui::DockSpaceOverViewport(ImGui::GetMainViewport());
 			
 			//ImGui::ShowDemoWindow();
 
@@ -94,6 +97,11 @@ namespace Iceberg {
 		ImGui::DestroyContext();
 
 		End();
+
+		}
+		catch (const std::exception& e) {
+			MessageBoxA(NULL, e.what(), "Error", MB_ICONERROR | MB_OK);
+		}
 	}
 
 	const Window* App::GetWindow()
@@ -103,4 +111,3 @@ namespace Iceberg {
 	}
 
 }
-

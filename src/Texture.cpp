@@ -5,8 +5,8 @@
 
 namespace Iceberg {
 
-	Texture::Texture(VkDevice device, const char* const filename, VkImageUsageFlags usage, VkMemoryPropertyFlags properties)
-		: device(device)
+	Texture::Texture(const char* const filename, VkImageUsageFlags usage, VkMemoryPropertyFlags properties)
+		: device(VK::GetLogicalDevice())
 	{
 		assert(filename);
 
@@ -103,8 +103,39 @@ namespace Iceberg {
 		res = vkCreateSampler(device, &samplerInfo, nullptr, &sampler);
 		if (res != VK_SUCCESS)
 			throw std::exception("Failed to create texture sampler!");
-	}
 
+		// Descriptor set
+		std::vector<VkDescriptorSetLayout> layouts(MAX_FRAMES_IN_FLIGHT, VK::GetDescriptorSetLayoutSampler());
+		VkDescriptorSetAllocateInfo descAllocInfo{};
+		descAllocInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_ALLOCATE_INFO;
+		descAllocInfo.descriptorPool = VK::GetDescriptorPool();
+		descAllocInfo.descriptorSetCount = (uint32_t)MAX_FRAMES_IN_FLIGHT;
+		descAllocInfo.pSetLayouts = layouts.data();
+
+		res = vkAllocateDescriptorSets(device, &descAllocInfo, descriptorSets);
+		if (res != VK_SUCCESS)
+			throw std::exception("Failed to allocate image descriptor sets!");
+
+		VkDescriptorImageInfo descImageInfo{};
+		descImageInfo.imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
+		descImageInfo.imageView = imageView;
+		descImageInfo.sampler = sampler;
+
+		for(size_t i = 0; i < MAX_FRAMES_IN_FLIGHT; i++)
+		{ 
+			VkWriteDescriptorSet descriptorWrite{};
+			descriptorWrite.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
+			descriptorWrite.dstSet = descriptorSets[i];
+			descriptorWrite.dstArrayElement = 0;
+			descriptorWrite.descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
+			descriptorWrite.descriptorCount = 1;
+			descriptorWrite.pBufferInfo = nullptr;
+			descriptorWrite.pTexelBufferView = nullptr;
+			descriptorWrite.dstBinding = 0;
+			descriptorWrite.pImageInfo = &descImageInfo;
+			vkUpdateDescriptorSets(device, 1, &descriptorWrite, 0, nullptr);
+		}
+	}
 	Texture::~Texture()
 	{
 		vkDestroySampler(device, sampler, nullptr);
@@ -128,6 +159,10 @@ namespace Iceberg {
 	VkSampler Texture::GetSampler() const
 	{
 		return sampler;
+	}
+	VkDescriptorSet Texture::GetDescriptorSet() const
+	{
+		return descriptorSets[VK::GetCurrentFrame()];
 	}
 	uint32_t Texture::GetWidth() const
 	{

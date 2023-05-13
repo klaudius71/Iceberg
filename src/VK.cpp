@@ -54,6 +54,18 @@ namespace Iceberg {
 	{
 		return Instance().graphicsQueue;
 	}
+	VkDescriptorPool VK::GetDescriptorPool()
+	{
+		return Instance().descriptorPool;
+	}
+	uint32_t VK::GetCurrentFrame()
+	{
+		return Instance().currentFrame;
+	}
+	VkDescriptorSetLayout VK::GetDescriptorSetLayoutSampler()
+	{
+		return Instance().descriptorSetLayoutSampler;
+	}
 	void VK::Terminate()
 	{
 		assert(instance && "VK instance not created!");
@@ -72,8 +84,10 @@ namespace Iceberg {
 		CreateImageViews();
 		CreateRenderPass();
 		CreateCommandPool();
+		CreateDescriptorPool();
+		CreateDescriptorSetLayouts();
 
-		crateTexture = new Texture(device, "assets/textures/crate_diffuse.tga");
+		crateTexture = new Texture("assets/textures/crate_diffuse.tga");
 		
 		cameraUniformBuffers = (UniformBuffer*)malloc(sizeof(UniformBuffer) * 2);
 		new(&cameraUniformBuffers[0]) UniformBuffer(device, sizeof(glm::mat4) * 2);
@@ -83,8 +97,6 @@ namespace Iceberg {
 		new(&worldUniformBuffers[0]) UniformBuffer(device, sizeof(glm::mat4));
 		new(&worldUniformBuffers[1]) UniformBuffer(device, sizeof(glm::mat4));
 
-		CreateDescriptorSetLayout();
-		CreateDescriptorPool();
 		CreateDescriptorSets();
 		CreateGraphicsPipeline();
 		CreateFramebuffers();
@@ -617,21 +629,31 @@ namespace Iceberg {
 		if (res != VK_SUCCESS)
 			throw std::exception("Failed to create render pass!");
 	}
-	void VK::CreateDescriptorSetLayout()
+	void VK::CreateDescriptorSetLayouts()
 	{
-		VkDescriptorSetLayoutBinding layoutBinding[]
+		const VkDescriptorSetLayoutBinding layoutBinding[]
 		{
 			{ 0, VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, 1, VK_SHADER_STAGE_VERTEX_BIT, nullptr },
 			{ 1, VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, 1, VK_SHADER_STAGE_VERTEX_BIT, nullptr },
 			{ 2, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, 1, VK_SHADER_STAGE_FRAGMENT_BIT, nullptr }
+		};
+		const VkDescriptorSetLayoutBinding layoutBinding2[]
+		{
+			{ 0, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, 1, VK_SHADER_STAGE_FRAGMENT_BIT, nullptr }
 		};
 
 		VkDescriptorSetLayoutCreateInfo layoutInfo{};
 		layoutInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_CREATE_INFO;
 		layoutInfo.bindingCount = (uint32_t)std::size(layoutBinding);
 		layoutInfo.pBindings = layoutBinding;
+		VkResult res;
+		res = vkCreateDescriptorSetLayout(device, &layoutInfo, nullptr, &descriptorSetLayoutUniform);
+		if (res != VK_SUCCESS)
+			throw std::exception("Failed to create descriptor set layout!");
 
-		VkResult res = vkCreateDescriptorSetLayout(device, &layoutInfo, nullptr, &descriptorSetLayout);
+		layoutInfo.bindingCount = (uint32_t)std::size(layoutBinding2);
+		layoutInfo.pBindings = layoutBinding2;
+		res = vkCreateDescriptorSetLayout(device, &layoutInfo, nullptr, &descriptorSetLayoutSampler);
 		if (res != VK_SUCCESS)
 			throw std::exception("Failed to create descriptor set layout!");
 	}
@@ -640,14 +662,14 @@ namespace Iceberg {
 		VkDescriptorPoolSize poolSize[]
 		{
 			{ VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, 2 * (uint32_t)MAX_FRAMES_IN_FLIGHT },
-			{ VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, (uint32_t)MAX_FRAMES_IN_FLIGHT }
+			{ VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, 1000 * (uint32_t)MAX_FRAMES_IN_FLIGHT }
 		};
 
 		VkDescriptorPoolCreateInfo poolInfo{};
 		poolInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_POOL_CREATE_INFO;
 		poolInfo.poolSizeCount = (uint32_t)std::size(poolSize);
 		poolInfo.pPoolSizes = poolSize;
-		poolInfo.maxSets = (uint32_t)MAX_FRAMES_IN_FLIGHT * 2;
+		poolInfo.maxSets = 1000 * (uint32_t)MAX_FRAMES_IN_FLIGHT;
 		
 		VkResult res = vkCreateDescriptorPool(device, &poolInfo, nullptr, &descriptorPool);
 		if (res != VK_SUCCESS)
@@ -655,7 +677,7 @@ namespace Iceberg {
 	}
 	void VK::CreateDescriptorSets()
 	{
-		std::vector<VkDescriptorSetLayout> layouts(MAX_FRAMES_IN_FLIGHT, descriptorSetLayout);
+		std::vector<VkDescriptorSetLayout> layouts(MAX_FRAMES_IN_FLIGHT, descriptorSetLayoutUniform);
 		VkDescriptorSetAllocateInfo allocInfo{};
 		allocInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_ALLOCATE_INFO;
 		allocInfo.descriptorPool = descriptorPool;
@@ -672,14 +694,9 @@ namespace Iceberg {
 		bufferInfoCam.range = sizeof(glm::mat4) * 2;
 		bufferInfoWorld.offset = 0;
 		bufferInfoWorld.range = sizeof(glm::mat4);
-
-		VkDescriptorImageInfo imageInfo{};
-		imageInfo.imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
-		imageInfo.imageView = crateTexture->GetImageView();
-		imageInfo.sampler = crateTexture->GetSampler();
 		for (size_t i = 0; i < MAX_FRAMES_IN_FLIGHT; i++)
 		{
-			VkWriteDescriptorSet descriptorWrite[3]{};
+			VkWriteDescriptorSet descriptorWrite[2]{};
 
 			bufferInfoCam.buffer = cameraUniformBuffers[i].GetBuffer();
 			descriptorWrite[0].sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
@@ -702,16 +719,6 @@ namespace Iceberg {
 			descriptorWrite[1].pTexelBufferView = nullptr;
 			descriptorWrite[1].dstBinding = 1;
 			descriptorWrite[1].pBufferInfo = &bufferInfoWorld;
-
-			descriptorWrite[2].sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
-			descriptorWrite[2].dstSet = descriptorSets[i];
-			descriptorWrite[2].dstArrayElement = 0;
-			descriptorWrite[2].descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
-			descriptorWrite[2].descriptorCount = 1;
-			descriptorWrite[2].pBufferInfo = nullptr;
-			descriptorWrite[2].pTexelBufferView = nullptr;
-			descriptorWrite[2].dstBinding = 2;
-			descriptorWrite[2].pImageInfo = &imageInfo;
 			
 			vkUpdateDescriptorSets(device, (uint32_t)std::size(descriptorWrite), descriptorWrite, 0, nullptr);
 		}
@@ -720,7 +727,8 @@ namespace Iceberg {
 	{
 		graphicsPipeline = new Pipeline(device, "assets/shaders/vert.spv", "assets/shaders/frag.spv");
 		graphicsPipeline->SetRenderPass(renderPass);
-		graphicsPipeline->SetDescriptorSetLayout(descriptorSetLayout);
+		VkDescriptorSetLayout descriptorSetLayouts[]{ descriptorSetLayoutUniform, descriptorSetLayoutSampler };
+		graphicsPipeline->SetDescriptorSetLayouts(descriptorSetLayouts, (uint32_t)std::size(descriptorSetLayouts));
 		graphicsPipeline->Complete();
 	}
 
@@ -923,12 +931,13 @@ namespace Iceberg {
 
 		vkCmdBindPipeline(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, graphicsPipeline->GetPipeline());
 
-		VkBuffer vertexBuffers[] { vertexBuffer->GetVkBuffer() };
-		VkDeviceSize offsets[] { 0 };
+		VkBuffer vertexBuffers[]{ vertexBuffer->GetVkBuffer() };
+		VkDeviceSize offsets[]{ 0 };
 		vkCmdBindVertexBuffers(commandBuffer, 0, 1, vertexBuffers, offsets);
 		vkCmdBindIndexBuffer(commandBuffer, indexBuffer->GetVkBuffer(), offsets[0], VK_INDEX_TYPE_UINT32);
 
-		vkCmdBindDescriptorSets(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, graphicsPipeline->GetPipelineLayout(), 0, 1, &descriptorSets[currentFrame], 0, nullptr);
+		VkDescriptorSet descSets[]{ descriptorSets[currentFrame], crateTexture->GetDescriptorSet() };
+		vkCmdBindDescriptorSets(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, graphicsPipeline->GetPipelineLayout(), 0, (uint32_t)std::size(descSets), descSets, 0, nullptr);
 
 		VkViewport viewport{};
 		viewport.x = 0.0f;
@@ -946,7 +955,7 @@ namespace Iceberg {
 
 		vkCmdDrawIndexed(commandBuffer, (uint32_t)indices.size(), 1, 0, 0, 0);
 
-		//ImGui_ImplVulkan_RenderDrawData(ImGui::GetDrawData(), commandBuffer, VK_NULL_HANDLE);
+		ImGui_ImplVulkan_RenderDrawData(ImGui::GetDrawData(), commandBuffer, VK_NULL_HANDLE);
 
 		vkCmdEndRenderPass(commandBuffer);
 
@@ -1024,7 +1033,8 @@ namespace Iceberg {
 
 		delete crateTexture;
 
-		vkDestroyDescriptorSetLayout(device, descriptorSetLayout, nullptr);
+		vkDestroyDescriptorSetLayout(device, descriptorSetLayoutUniform, nullptr);
+		vkDestroyDescriptorSetLayout(device, descriptorSetLayoutSampler, nullptr);
 
 		for (int i = 0; i < MAX_FRAMES_IN_FLIGHT; i++)
 		{

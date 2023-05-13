@@ -14,7 +14,7 @@ namespace Iceberg {
 		~Pipeline();
 
 		void SetRenderPass(VkRenderPass renderPass);
-		void SetDescriptorSetLayout(VkDescriptorSetLayout descriptorSetLayout);
+		void SetDescriptorSetLayouts(VkDescriptorSetLayout* descriptorSetLayouts, uint32_t count);
 
 		void Complete();
 
@@ -28,7 +28,7 @@ namespace Iceberg {
 		VkDevice device;
 		const char* const vertex_shader_filename;
 		const char* const fragment_shader_filename;
-		VkDescriptorSetLayout descriptorSetLayout;
+		std::vector<VkDescriptorSetLayout> descriptorSetLayouts;
 		VkRenderPass renderPass;
 		VkPipelineLayout pipelineLayout;
 		VkPipeline graphicsPipeline;

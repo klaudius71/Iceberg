@@ -9,4 +9,6 @@
 #define ICEBERG_API // Not using dynamic library at the moment
 #endif
 
+constexpr int MAX_FRAMES_IN_FLIGHT = 2;
+
 #endif

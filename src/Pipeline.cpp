@@ -7,7 +7,7 @@ namespace Iceberg {
 
 	Pipeline::Pipeline(VkDevice device, const char* const _vertex_shader_filename, const char* const _fragment_shader_filename)
 		: device(device), vertex_shader_filename(_vertex_shader_filename), fragment_shader_filename(_fragment_shader_filename),
-		descriptorSetLayout(VK_NULL_HANDLE), renderPass(VK_NULL_HANDLE), pipelineLayout(VK_NULL_HANDLE), graphicsPipeline(VK_NULL_HANDLE)
+		descriptorSetLayouts(), renderPass(VK_NULL_HANDLE), pipelineLayout(VK_NULL_HANDLE), graphicsPipeline(VK_NULL_HANDLE)
 	{
 	}
 	Pipeline::~Pipeline()
@@ -28,17 +28,17 @@ namespace Iceberg {
 		assert(_renderPass != VK_NULL_HANDLE);
 		renderPass = _renderPass;
 	}
-	void Pipeline::SetDescriptorSetLayout(VkDescriptorSetLayout _descriptorSetLayout)
+	void Pipeline::SetDescriptorSetLayouts(VkDescriptorSetLayout* _descriptorSetLayouts, uint32_t count)
 	{
-		assert(_descriptorSetLayout != VK_NULL_HANDLE);
-		descriptorSetLayout = _descriptorSetLayout;
+		assert(_descriptorSetLayouts != VK_NULL_HANDLE);
+		descriptorSetLayouts = std::vector<VkDescriptorSetLayout>(&_descriptorSetLayouts[0], &_descriptorSetLayouts[count]);
 	}
 
 	void Pipeline::Complete()
 	{
 		assert(pipelineLayout == VK_NULL_HANDLE && graphicsPipeline == VK_NULL_HANDLE);
 		assert(renderPass != VK_NULL_HANDLE);
-		assert(descriptorSetLayout != VK_NULL_HANDLE);
+		assert(descriptorSetLayouts.size() != 0);
 
 		auto vertShaderCode = ReadBinaryFile("assets/shaders/vert.spv");
 		auto fragShaderCode = ReadBinaryFile("assets/shaders/frag.spv");
@@ -148,8 +148,8 @@ namespace Iceberg {
 		// Pipeline layout creation
 		VkPipelineLayoutCreateInfo pipelineLayoutInfo{};
 		pipelineLayoutInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO;
-		pipelineLayoutInfo.setLayoutCount = 1;
-		pipelineLayoutInfo.pSetLayouts = &descriptorSetLayout;
+		pipelineLayoutInfo.setLayoutCount = (uint32_t)descriptorSetLayouts.size();
+		pipelineLayoutInfo.pSetLayouts = descriptorSetLayouts.data();
 		pipelineLayoutInfo.pushConstantRangeCount = 0;
 		pipelineLayoutInfo.pPushConstantRanges = nullptr;
 

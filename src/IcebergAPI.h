@@ -18,5 +18,6 @@
 
 #include "App.h"
 #include "Window.h"
+#include "Texture.h"
 
 #endif

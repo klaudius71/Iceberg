@@ -4,13 +4,13 @@ layout(location = 0) in vec3 position;
 layout(location = 1) in vec3 col;
 layout(location = 2) in vec2 uv;
 
-layout(binding = 0) uniform CameraData 
+layout(set = 0, binding = 0) uniform CameraData 
 {
 	mat4 proj_matrix;
 	mat4 view_matrix;
 } cam_matrices;
 
-layout(binding = 1) uniform WorldData
+layout(set = 0, binding = 1) uniform WorldData
 {
 	mat4 world_matrix;
 } world;

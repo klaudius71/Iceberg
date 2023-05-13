@@ -16,6 +16,9 @@ public:
 	virtual void Start() override;
 	virtual void Update() override;
 	virtual void End() override;
+
+private:
+	Iceberg::Texture* tex1;
 };
 
 #endif // !_SANDBOX

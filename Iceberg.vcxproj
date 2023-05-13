@@ -60,7 +60,7 @@
       <AdditionalIncludeDirectories>$(ProjectDir)src;$(ProjectDir)external\glfw-3.3.8\include;$(VULKAN_SDK)\Include;$(ProjectDir)external\glm\include;$(ProjectDir)external\imgui;$(ProjectDir)external\stb</AdditionalIncludeDirectories>
       <PrecompiledHeader>Use</PrecompiledHeader>
       <PrecompiledHeaderFile>ipch.h</PrecompiledHeaderFile>
-      <DisableSpecificWarnings>4201; 4324</DisableSpecificWarnings>
+      <DisableSpecificWarnings>4201; 4324; 26495</DisableSpecificWarnings>
       <LanguageStandard>stdcpp17</LanguageStandard>
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
     </ClCompile>
@@ -88,7 +88,7 @@
       <AdditionalIncludeDirectories>$(ProjectDir)src;$(ProjectDir)external\glfw-3.3.8\include;$(VULKAN_SDK)\Include;$(ProjectDir)external\glm\include;$(ProjectDir)external\imgui;$(ProjectDir)external\stb</AdditionalIncludeDirectories>
       <PrecompiledHeader>Use</PrecompiledHeader>
       <PrecompiledHeaderFile>ipch.h</PrecompiledHeaderFile>
-      <DisableSpecificWarnings>4201; 4324</DisableSpecificWarnings>
+      <DisableSpecificWarnings>4201; 4324; 26495</DisableSpecificWarnings>
       <LanguageStandard>stdcpp17</LanguageStandard>
     </ClCompile>
     <Link>
