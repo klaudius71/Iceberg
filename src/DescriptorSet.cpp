@@ -106,7 +106,7 @@ namespace Iceberg {
 				{
 					VkDescriptorBufferInfo* bufferInfo = (VkDescriptorBufferInfo*)bufferInfos[j];
 					UniformBuffer* uniformBuffer = (UniformBuffer*)(*objects)[j];
-					bufferInfo->buffer = uniformBuffer->GetBuffer(i);
+					bufferInfo->buffer = uniformBuffer->GetBuffer((uint32_t)i);
 					bufferInfo->offset = 0;
 					bufferInfo->range = uniformBuffer->GetBufferSize();
 					break;
