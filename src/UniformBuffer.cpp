@@ -20,6 +20,10 @@ namespace Iceberg {
 	{
 		return buffer.GetVkBuffer();
 	}
+	uint64_t UniformBuffer::GetBufferSize() const
+	{
+		return bufferSize;
+	}
 
 	void UniformBuffer::SendData(const void* data, uint64_t size) const
 	{

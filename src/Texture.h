@@ -4,6 +4,8 @@
 #include "IcebergCore.h"
 
 namespace Iceberg {
+
+	class DescriptorSet;
 	
 	class Texture
 	{
@@ -19,6 +21,7 @@ namespace Iceberg {
 		VkImageView GetImageView() const;
 		VkSampler GetSampler() const;
 		VkDescriptorSet GetDescriptorSet() const;
+		VkDescriptorSet GetDescriptorSet(uint32_t index) const;
 
 		void Bind() const;
 
@@ -32,7 +35,7 @@ namespace Iceberg {
 		VkDeviceMemory imageMemory;
 		VkImageView imageView;
 		VkSampler sampler;
-		VkDescriptorSet descriptorSets[MAX_FRAMES_IN_FLIGHT];
+		DescriptorSet* descriptorSet;
 	};
 
 }

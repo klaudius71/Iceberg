@@ -69,7 +69,8 @@ namespace Iceberg {
 	void VK::Terminate()
 	{
 		assert(instance && "VK instance not created!");
-		delete instance;
+		instance->~VK();
+		free(instance);
 		instance = nullptr;
 	}
 

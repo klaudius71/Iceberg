@@ -14,6 +14,7 @@ namespace Iceberg {
 		~UniformBuffer();
 
 		VkBuffer GetBuffer() const;
+		uint64_t GetBufferSize() const;
 
 		void SendData(const void* data, uint64_t size) const;
 
