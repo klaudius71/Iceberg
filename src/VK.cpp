@@ -8,6 +8,7 @@
 #include "UniformBuffer.h"
 #include "Pipeline.h"
 #include "Texture.h"
+#include "DescriptorSet.h"
 
 namespace Iceberg {
 
@@ -90,13 +91,8 @@ namespace Iceberg {
 
 		crateTexture = new Texture("assets/textures/crate_diffuse.tga");
 		
-		cameraUniformBuffers = (UniformBuffer*)malloc(sizeof(UniformBuffer) * 2);
-		new(&cameraUniformBuffers[0]) UniformBuffer(device, sizeof(glm::mat4) * 2);
-		new(&cameraUniformBuffers[1]) UniformBuffer(device, sizeof(glm::mat4) * 2);
-
-		worldUniformBuffers = (UniformBuffer*)malloc(sizeof(UniformBuffer) * 2);
-		new(&worldUniformBuffers[0]) UniformBuffer(device, sizeof(glm::mat4));
-		new(&worldUniformBuffers[1]) UniformBuffer(device, sizeof(glm::mat4));
+		cameraUniformBuffer = new UniformBuffer(device, sizeof(glm::mat4) * 2);
+		worldUniformBuffer = new UniformBuffer(device, sizeof(glm::mat4));
 
 		CreateDescriptorSets();
 		CreateGraphicsPipeline();
@@ -678,51 +674,10 @@ namespace Iceberg {
 	}
 	void VK::CreateDescriptorSets()
 	{
-		std::vector<VkDescriptorSetLayout> layouts(MAX_FRAMES_IN_FLIGHT, descriptorSetLayoutUniform);
-		VkDescriptorSetAllocateInfo allocInfo{};
-		allocInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_ALLOCATE_INFO;
-		allocInfo.descriptorPool = descriptorPool;
-		allocInfo.descriptorSetCount = (uint32_t)MAX_FRAMES_IN_FLIGHT;
-		allocInfo.pSetLayouts = layouts.data();
-
-		VkResult res;
-		res = vkAllocateDescriptorSets(device, &allocInfo, descriptorSets);
-		if (res != VK_SUCCESS)
-			throw std::exception("Failed to allocate uniform buffer descriptor sets!");
-
-		VkDescriptorBufferInfo bufferInfoCam{}, bufferInfoWorld{};
-		bufferInfoCam.offset = 0;
-		bufferInfoCam.range = sizeof(glm::mat4) * 2;
-		bufferInfoWorld.offset = 0;
-		bufferInfoWorld.range = sizeof(glm::mat4);
-		for (size_t i = 0; i < MAX_FRAMES_IN_FLIGHT; i++)
-		{
-			VkWriteDescriptorSet descriptorWrite[2]{};
-
-			bufferInfoCam.buffer = cameraUniformBuffers[i].GetBuffer();
-			descriptorWrite[0].sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
-			descriptorWrite[0].dstSet = descriptorSets[i];
-			descriptorWrite[0].dstArrayElement = 0;
-			descriptorWrite[0].descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
-			descriptorWrite[0].descriptorCount = 1;
-			descriptorWrite[0].pImageInfo = nullptr;
-			descriptorWrite[0].pTexelBufferView = nullptr;
-			descriptorWrite[0].dstBinding = 0;
-			descriptorWrite[0].pBufferInfo = &bufferInfoCam;
-
-			bufferInfoWorld.buffer = worldUniformBuffers[i].GetBuffer();
-			descriptorWrite[1].sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
-			descriptorWrite[1].dstSet = descriptorSets[i];
-			descriptorWrite[1].dstArrayElement = 0;
-			descriptorWrite[1].descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
-			descriptorWrite[1].descriptorCount = 1;
-			descriptorWrite[1].pImageInfo = nullptr;
-			descriptorWrite[1].pTexelBufferView = nullptr;
-			descriptorWrite[1].dstBinding = 1;
-			descriptorWrite[1].pBufferInfo = &bufferInfoWorld;
-			
-			vkUpdateDescriptorSets(device, (uint32_t)std::size(descriptorWrite), descriptorWrite, 0, nullptr);
-		}
+		descriptorSet = new DescriptorSet(descriptorSetLayoutUniform);
+		descriptorSet->AddUniformBuffer(cameraUniformBuffer);
+		descriptorSet->AddUniformBuffer(worldUniformBuffer);
+		descriptorSet->Complete();
 	}
 	void VK::CreateGraphicsPipeline()
 	{
@@ -901,8 +856,8 @@ namespace Iceberg {
 			glm::lookAt(glm::vec3(0.0f, 0.0f, -2.0f), glm::vec3(0.0f), glm::vec3(0.0f, 1.0f, 0.0f)),
 		};
 
-		cameraUniformBuffers[currentFrame].SendData(cam_matrices, sizeof(glm::mat4) * 2);
-		worldUniformBuffers[currentFrame].SendData(&world, sizeof(glm::mat4));
+		cameraUniformBuffer->SendData(cam_matrices, sizeof(glm::mat4) * 2);
+		worldUniformBuffer->SendData(&world, sizeof(glm::mat4));
 		
 		world *= glm::rotate(.01f, glm::vec3(0.0f, 0.0f, 1.0f));
 
@@ -937,7 +892,7 @@ namespace Iceberg {
 		vkCmdBindVertexBuffers(commandBuffer, 0, 1, vertexBuffers, offsets);
 		vkCmdBindIndexBuffer(commandBuffer, indexBuffer->GetVkBuffer(), offsets[0], VK_INDEX_TYPE_UINT32);
 
-		VkDescriptorSet descSets[]{ descriptorSets[currentFrame], crateTexture->GetDescriptorSet() };
+		VkDescriptorSet descSets[]{ descriptorSet->GetVkDescriptorSet()[currentFrame], crateTexture->GetDescriptorSet()};
 		vkCmdBindDescriptorSets(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, graphicsPipeline->GetPipelineLayout(), 0, (uint32_t)std::size(descSets), descSets, 0, nullptr);
 
 		VkViewport viewport{};
@@ -1037,13 +992,9 @@ namespace Iceberg {
 		vkDestroyDescriptorSetLayout(device, descriptorSetLayoutUniform, nullptr);
 		vkDestroyDescriptorSetLayout(device, descriptorSetLayoutSampler, nullptr);
 
-		for (int i = 0; i < MAX_FRAMES_IN_FLIGHT; i++)
-		{
-			cameraUniformBuffers[i].~UniformBuffer();
-			worldUniformBuffers[i].~UniformBuffer();
-		}
-		free(cameraUniformBuffers);
-		free(worldUniformBuffers);
+		delete cameraUniformBuffer;
+		delete worldUniformBuffer;
+		delete descriptorSet;
 
 		vkDestroyDescriptorPool(device, descriptorPool, nullptr);
 

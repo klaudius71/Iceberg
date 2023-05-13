@@ -17,6 +17,7 @@ namespace Iceberg {
 	class UniformBuffer;
 	class Pipeline;
 	class Texture;
+	class DescriptorSet;
 
 	class VK
 	{
@@ -129,10 +130,10 @@ namespace Iceberg {
 		IndexBuffer* indexBuffer;
 		VkDescriptorSetLayout descriptorSetLayoutUniform;
 		VkDescriptorSetLayout descriptorSetLayoutSampler;
-		UniformBuffer* cameraUniformBuffers;
-		UniformBuffer* worldUniformBuffers;
+		UniformBuffer* cameraUniformBuffer;
+		UniformBuffer* worldUniformBuffer;
 		VkDescriptorPool descriptorPool;
-		VkDescriptorSet descriptorSets[MAX_FRAMES_IN_FLIGHT];
+		DescriptorSet* descriptorSet;
 		Pipeline* graphicsPipeline;
 
 		std::vector<VkFramebuffer> swapChainFramebuffers;
