@@ -94,7 +94,7 @@ namespace Iceberg {
 		}
 
 		// For each frame in flight
-		for (size_t i = 0; i < MAX_FRAMES_IN_FLIGHT; i++)
+		for (uint32_t i = 0; i < MAX_FRAMES_IN_FLIGHT; i++)
 		{
 			// Populate each buffer info
 			for (int j = 0; j < descriptorWrite->size(); j++)
@@ -106,7 +106,7 @@ namespace Iceberg {
 				{
 					VkDescriptorBufferInfo* bufferInfo = (VkDescriptorBufferInfo*)bufferInfos[j];
 					UniformBuffer* uniformBuffer = (UniformBuffer*)(*objects)[j];
-					bufferInfo->buffer = uniformBuffer->GetBuffer((uint32_t)i);
+					bufferInfo->buffer = uniformBuffer->GetBuffer(i);
 					bufferInfo->offset = 0;
 					bufferInfo->range = uniformBuffer->GetBufferSize();
 					break;

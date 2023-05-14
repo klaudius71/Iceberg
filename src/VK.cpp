@@ -102,7 +102,6 @@ namespace Iceberg {
 		uint64_t bufferSize = sizeof(Vertex) * vertices.size();
 		vertexBuffer = new VertexBuffer(device, bufferSize);
 		StagingBuffer stagingBuffer(device, bufferSize);
-		stagingBuffer.Bind();
 		void* mem;
 		stagingBuffer.Map(mem);
 		memcpy_s(mem, bufferSize, vertices.data(), bufferSize);
@@ -113,7 +112,6 @@ namespace Iceberg {
 		bufferSize = sizeof(uint32_t) * indices.size();
 		indexBuffer = new IndexBuffer(device, (uint32_t)indices.size());
 		stagingBuffer.Resize(bufferSize);
-		stagingBuffer.Bind();
 		stagingBuffer.Map(mem);
 		memcpy_s(mem, bufferSize, indices.data(), bufferSize);
 		stagingBuffer.Unmap();
@@ -126,7 +124,6 @@ namespace Iceberg {
 	{
 		CleanupVulkan();
 	}
-
 
 	VKAPI_ATTR VkBool32 VKAPI_CALL VK::debugCallback(VkDebugUtilsMessageSeverityFlagBitsEXT messageSeverity, VkDebugUtilsMessageTypeFlagsEXT, const VkDebugUtilsMessengerCallbackDataEXT* pCallbackData, void*)
 	{
@@ -257,7 +254,7 @@ namespace Iceberg {
 		SwapChainSupportDetails swapChainSupport = QuerySwapChainSupport(physicalDevice);
 
 		VkSurfaceFormatKHR surfaceFormat = ChooseSwapSurfaceFormat(swapChainSupport.formats);
-		VkPresentModeKHR presentMode = ChooseSwapPresentMode(swapChainSupport.presentModes, true);
+		VkPresentModeKHR presentMode = ChooseSwapPresentMode(swapChainSupport.presentModes, useVSync);
 		VkExtent2D extent = ChooseSwapExtent(swapChainSupport.capabilities);
 
 		uint32_t imageCount = swapChainSupport.capabilities.minImageCount + 1;
@@ -632,7 +629,6 @@ namespace Iceberg {
 		{
 			{ 0, VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, 1, VK_SHADER_STAGE_VERTEX_BIT, nullptr },
 			{ 1, VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, 1, VK_SHADER_STAGE_VERTEX_BIT, nullptr },
-			{ 2, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, 1, VK_SHADER_STAGE_FRAGMENT_BIT, nullptr }
 		};
 		const VkDescriptorSetLayoutBinding layoutBinding2[]
 		{

@@ -138,6 +138,7 @@
     <ClCompile Include="src\App.cpp" />
     <ClCompile Include="src\Buffer.cpp" />
     <ClCompile Include="src\DescriptorSet.cpp" />
+    <ClCompile Include="src\Image.cpp" />
     <ClCompile Include="src\Texture.cpp" />
     <ClCompile Include="src\IndexBuffer.cpp" />
     <ClCompile Include="src\ipch.cpp">
@@ -160,6 +161,7 @@
     <ClInclude Include="src\App.h" />
     <ClInclude Include="src\Buffer.h" />
     <ClInclude Include="src\DescriptorSet.h" />
+    <ClInclude Include="src\Image.h" />
     <ClInclude Include="src\IcebergAPI.h" />
     <ClInclude Include="src\IcebergCore.h" />
     <ClInclude Include="src\Texture.h" />

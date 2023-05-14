@@ -9,6 +9,7 @@ namespace Iceberg {
 		: Buffer(device, size, VK_BUFFER_USAGE_TRANSFER_SRC_BIT, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT)
 	{
 		cpuWriteable = true;
+		Bind();
 	}
 
 	void StagingBuffer::Resize(VkDeviceSize size)
@@ -39,6 +40,8 @@ namespace Iceberg {
 		res = vkAllocateMemory(dev, &allocInfo, nullptr, &bufferMemory);
 		if (res != VK_SUCCESS)
 			throw std::exception("Failed to allocate buffer memory!");
+
+		Bind();
 	}
 
 	void StagingBuffer::TransferBuffer(const Buffer* const buf) const
@@ -54,12 +57,14 @@ namespace Iceberg {
 
 		VK::Helper::EndOneTimeCommand(commandBuffer);
 	}
-	void StagingBuffer::TransferBuffer(const Texture* const buf) const
+	void StagingBuffer::TransferBuffer(Texture* const buf) const
 	{
 		assert(buf);
 		//this->Bind();
 		//buf->Bind();
 	
+		buf->transitionImageLayout(VK_FORMAT_R8G8B8A8_UNORM, VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL);
+
 		VkCommandBuffer commandBuffer = VK::Helper::BeginOneTimeCommand();
 	
 		VkBufferImageCopy region{};
@@ -77,10 +82,12 @@ namespace Iceberg {
 			buf->GetHeight(),
 			1
 		};
-	
+
 		vkCmdCopyBufferToImage(commandBuffer, buffer, buf->GetImage(), VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, 1, &region);
 	
 		VK::Helper::EndOneTimeCommand(commandBuffer);
+
+		buf->transitionImageLayout(VK_FORMAT_R8G8B8A8_UNORM, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
 	}
 
 }

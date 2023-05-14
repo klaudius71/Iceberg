@@ -18,7 +18,7 @@ namespace Iceberg {
 		void Resize(VkDeviceSize size);
 
 		void TransferBuffer(const Buffer* const buf) const;
-		void TransferBuffer(const Texture* const buf) const;
+		void TransferBuffer(Texture* const buf) const;
 	};
 
 }

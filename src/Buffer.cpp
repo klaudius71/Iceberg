@@ -67,6 +67,15 @@ namespace Iceberg {
 	void Buffer::Unmap() const
 	{
 		assert(cpuWriteable);
+		VkMappedMemoryRange range{};
+		range.sType = VK_STRUCTURE_TYPE_MAPPED_MEMORY_RANGE;
+		range.offset = 0;
+		range.memory = bufferMemory;
+		range.size = size;
+		VkResult res = vkFlushMappedMemoryRanges(dev, 1, &range);
+		if (res != VK_SUCCESS)
+			throw std::exception("Failed to flush mapped memory!");
+
 		vkUnmapMemory(dev, bufferMemory);
 	}
 

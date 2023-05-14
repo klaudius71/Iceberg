@@ -99,6 +99,9 @@
     <ClCompile Include="src\DescriptorSet.cpp">
       <Filter>Source Files\GraphicsContext\Pipeline</Filter>
     </ClCompile>
+    <ClCompile Include="src\Image.cpp">
+      <Filter>Source Files\GraphicsContext\Texture</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="src\App.h">
@@ -157,6 +160,9 @@
     </ClInclude>
     <ClInclude Include="src\DescriptorSet.h">
       <Filter>Source Files\GraphicsContext\Pipeline</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Image.h">
+      <Filter>Source Files\GraphicsContext\Texture</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

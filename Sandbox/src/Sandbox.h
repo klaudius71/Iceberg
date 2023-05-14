@@ -17,8 +17,16 @@ public:
 	virtual void Update() override;
 	virtual void End() override;
 
+	void RenderFrame();
+
+	static uint32_t ConvertToRGBA(const glm::vec4& color);
+
 private:
-	Iceberg::Texture* tex1;
+	glm::vec4 PerPixel(uint32_t x, uint32_t y);
+	void Resize(uint32_t width, uint32_t height);
+
+	uint32_t* pixels;
+	Iceberg::Image* img1;
 };
 
 #endif // !_SANDBOX
