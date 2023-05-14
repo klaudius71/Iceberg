@@ -883,13 +883,13 @@ namespace Iceberg {
 
 		vkCmdBindPipeline(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, graphicsPipeline->GetPipeline());
 
-		VkBuffer vertexBuffers[]{ vertexBuffer->GetVkBuffer() };
-		VkDeviceSize offsets[]{ 0 };
-		vkCmdBindVertexBuffers(commandBuffer, 0, 1, vertexBuffers, offsets);
-		vkCmdBindIndexBuffer(commandBuffer, indexBuffer->GetVkBuffer(), offsets[0], VK_INDEX_TYPE_UINT32);
-
-		VkDescriptorSet descSets[]{ descriptorSet->GetVkDescriptorSet()[currentFrame], crateTexture->GetDescriptorSet()};
-		vkCmdBindDescriptorSets(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, graphicsPipeline->GetPipelineLayout(), 0, (uint32_t)std::size(descSets), descSets, 0, nullptr);
+		//VkBuffer vertexBuffers[]{ vertexBuffer->GetVkBuffer() };
+		//VkDeviceSize offsets[]{ 0 };
+		//vkCmdBindVertexBuffers(commandBuffer, 0, 1, vertexBuffers, offsets);
+		//vkCmdBindIndexBuffer(commandBuffer, indexBuffer->GetVkBuffer(), offsets[0], VK_INDEX_TYPE_UINT32);
+		//
+		//VkDescriptorSet descSets[]{ descriptorSet->GetVkDescriptorSet()[currentFrame], crateTexture->GetDescriptorSet()};
+		//vkCmdBindDescriptorSets(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, graphicsPipeline->GetPipelineLayout(), 0, (uint32_t)std::size(descSets), descSets, 0, nullptr);
 
 		VkViewport viewport{};
 		viewport.x = 0.0f;
@@ -905,7 +905,7 @@ namespace Iceberg {
 		scissor.extent = swapChainExtent;
 		vkCmdSetScissor(commandBuffer, 0, 1, &scissor);
 
-		vkCmdDrawIndexed(commandBuffer, (uint32_t)indices.size(), 1, 0, 0, 0);
+		//vkCmdDrawIndexed(commandBuffer, (uint32_t)indices.size(), 1, 0, 0, 0);
 
 		ImGui_ImplVulkan_RenderDrawData(ImGui::GetDrawData(), commandBuffer, VK_NULL_HANDLE);
 

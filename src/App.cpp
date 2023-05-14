@@ -27,17 +27,18 @@ namespace Iceberg {
 	{
 		try {
 
-		Start();
-
 		// Setup Dear ImGui context
 		IMGUI_CHECKVERSION();
 		ImGui::CreateContext();
+
 		ImGuiIO& io = ImGui::GetIO(); (void)io;
+		io.Fonts->AddFontDefault();
 		io.ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard;       // Enable Keyboard Controls
 		io.ConfigFlags |= ImGuiConfigFlags_DockingEnable;           // Enable Docking
-		io.ConfigFlags |= ImGuiConfigFlags_ViewportsEnable;         // Enable Multi-Viewport / Platform Windows
+		io.ConfigFlags |= ImGuiConfigFlags_ViewportsEnable;         // Enable Multi-Viewport / Platform Windows	
 		// io.ConfigViewportsNoAutoMerge = true;
 		// io.ConfigViewportsNoTaskBarIcon = true;
+		io.ConfigFlags |= ImGuiConfigFlags_NoMouseCursorChange;
 
 		// Setup Dear ImGui style
 		ImGui::StyleColorsDark();
@@ -50,23 +51,12 @@ namespace Iceberg {
 			style.Colors[ImGuiCol_WindowBg].w = 1.0f;
 		}
 
+		Start();
+
 		VK::InitializeImGui();
 
-		char buf[64];
-		int count = 0;
 		while (!window->IsOpen())
 		{
-			auto currTime = std::chrono::high_resolution_clock::now();
-			std::chrono::duration<float> duration = currTime - prevTime;
-			deltaTime = duration.count() * 1000.0f;
-			prevTime = currTime;
-			count++;
-			if (count == 10)
-			{
-				count = 0;
-				sprintf_s(buf, "woohoo, it works    deltaTime: %.3fms", deltaTime);
-				window->SetWindowTitle(buf);
-			}
 
 			window->PollEvents();
 			
@@ -76,12 +66,12 @@ namespace Iceberg {
 			ImGui::DockSpaceOverViewport(ImGui::GetMainViewport());
 			
 			ImGui::ShowDemoWindow();
-
+			
 			Update();
-
+			
 			ImGui::Render();
 			VK::DrawFrame();
-
+			
 			ImGui::GetIO().ConfigFlags |= ImGuiConfigFlags_ViewportsEnable;
 			if (io.ConfigFlags & ImGuiConfigFlags_ViewportsEnable)
 			{

@@ -25,8 +25,15 @@ private:
 	glm::vec4 PerPixel(uint32_t x, uint32_t y);
 	void Resize(uint32_t width, uint32_t height);
 
+	bool dragging;
+	int prev_window_position_x;
+	int prev_window_position_y;
 	uint32_t* pixels;
+	ImFont* font;
 	Iceberg::Image* img1;
+	Iceberg::Texture* x_tex;
+	Iceberg::Texture* square_tex;
+	Iceberg::Texture* line_tex;
 };
 
 #endif // !_SANDBOX

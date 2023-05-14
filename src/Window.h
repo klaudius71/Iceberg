@@ -22,9 +22,15 @@ namespace Iceberg {
 		void SetWindowTitle(const char* const name) const;
 		void HideCursor() const;
 		void ShowCursor() const;
+		bool IsMaximized() const;
+
+		GLFWcursor* const GetHoriResizeCursor() const;
+		GLFWcursor* const GetVertResizeCursor() const;
+		GLFWcursor* const GetFwdResizeCursor() const;
+		GLFWcursor* const GetBwdResizeCursor() const;
 
 		void SetWindowIcon(const char* const icon_path);
-		//HWND GetNativeWindow() const;
+		HWND GetNativeWindow() const;
 
 		const bool IsOpen();
 		void PollEvents();
@@ -36,6 +42,8 @@ namespace Iceberg {
 	protected:
 		static void glfw_error_callback(int error_code, const char* description);
 		static void glfw_key_callback(GLFWwindow* window, int key, int scancode, int action, int mods);
+		static void glfw_cursor_pos_callback(GLFWwindow* window, double xpos, double ypos);
+		static void glfw_maximize_callback(GLFWwindow* window, int maximized);
 		//static void glfw_window_resize_callback(GLFWwindow* window, int width, int height);
 
 		int prev_window_pos_x;
@@ -45,6 +53,13 @@ namespace Iceberg {
 		int window_width;
 		int window_height;
 		GLFWwindow* window;
+
+		GLFWcursor* hori_resize;
+		GLFWcursor* vert_resize;
+		GLFWcursor* fwd_resize;
+		GLFWcursor* bwd_resize;
+
+		bool maximized;
 	};
 
 }
