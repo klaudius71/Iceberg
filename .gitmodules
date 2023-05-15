@@ -2,3 +2,6 @@
 	path = Iceberg/external/imgui
 	url = https://github.com/ocornut/imgui
 	branch = docking
+[submodule "Iceberg/external/glfw"]
+	path = Iceberg/external/glfw
+	url = https://github.com/glfw/glfw
