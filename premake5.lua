@@ -1,7 +1,6 @@
 workspace "Iceberg"
     configurations { "Debug", "Release" }
-    platforms { "x86", "x64" }
-    --defaultplatform "x86"
+    platforms { "x64" }
     startproject "Sandbox"
     flags { "MultiProcessorCompile" }
     warnings "Default"
@@ -59,8 +58,6 @@ project "Iceberg"
         "Iceberg/external/stb"
     }
 
-    filter { "platforms:x86" }
-        architecture "x86"
     filter { "platforms:x64" }
         architecture "x64"
 
@@ -110,8 +107,6 @@ project "Sandbox"
         "Iceberg/external/stb"
     }
 
-    filter { "platforms:x86" }
-        architecture "x86"
     filter { "platforms:x64" }
         architecture "x64"
     
