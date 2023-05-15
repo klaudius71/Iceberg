@@ -220,7 +220,7 @@ namespace Iceberg {
 	{
 		if (vsync)
 		{
-			printf("\npresent mode: %s\n", "VK_PRESENT_MODE_FIFO_KHR");
+			//printf("\npresent mode: %s\n", "VK_PRESENT_MODE_FIFO_KHR");
 			return VK_PRESENT_MODE_FIFO_KHR;
 		}
 
@@ -233,7 +233,7 @@ namespace Iceberg {
 			}
 		}
 
-		printf("\npresent mode: %s\n", "VK_PRESENT_MODE_FIFO_KHR");
+		//printf("\npresent mode: %s\n", "VK_PRESENT_MODE_FIFO_KHR");
 		return VK_PRESENT_MODE_FIFO_KHR;
 	}
 

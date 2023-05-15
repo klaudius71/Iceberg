@@ -8,13 +8,13 @@ namespace Iceberg {
 
 	App* App::instance = nullptr;
 
-	App::App(const int window_width, const int window_height, const char* const icon_path)
+	App::App(const int window_width, const int window_height, const bool borderless, const char* const icon_path)
 		: window(nullptr)
 	{
 		assert(instance == nullptr);
 		instance = this;
 
-		window = new Window(window_width, window_height, icon_path);
+		window = new Window(window_width, window_height, borderless, icon_path);
 		VK::Initialize();
 	}
 	App::~App()
@@ -57,8 +57,8 @@ namespace Iceberg {
 
 		while (!window->IsOpen())
 		{
-
 			window->PollEvents();
+			window->Update();
 			
 			ImGui_ImplVulkan_NewFrame();
 			ImGui_ImplGlfw_NewFrame();

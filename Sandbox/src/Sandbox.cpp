@@ -1,7 +1,7 @@
 #include "Sandbox.h"
 
 Sandbox::Sandbox(const int width, const int height, const char* const icon_path)
-	: App(width, height, icon_path), img1(nullptr), x_tex(nullptr), square_tex(nullptr), pixels(nullptr), dragging(false)
+	: App(width, height, true, icon_path), img1(nullptr), x_tex(nullptr), square_tex(nullptr), line_tex(nullptr), font(nullptr), pixels(nullptr), dragging(false)
 {
 }
 
@@ -11,6 +11,7 @@ void Sandbox::Start()
 	x_tex = new Iceberg::Texture("assets/textures/x.png");
 	square_tex = new Iceberg::Texture("assets/textures/square.png");
 	line_tex = new Iceberg::Texture("assets/textures/line.png");
+	minimize_tex = new Iceberg::Texture("assets/textures/minimize.png");
 	pixels = new uint32_t[img1->GetWidth() * img1->GetHeight()];
 
 	font = ImGui::GetIO().Fonts->AddFontFromFileTTF("assets/fonts/Roboto-Medium.ttf", 24);
@@ -18,22 +19,36 @@ void Sandbox::Start()
 
 void Sandbox::Update()
 {
-	const Iceberg::Window* wind = App::GetWindow();
+	const Iceberg::Window* wind = GetWindow();
 	
 	ImGuiIO& io = ImGui::GetIO();
 
 	ImGui::PushStyleVar(ImGuiStyleVar_FramePadding, ImVec2{ 0.0f, 10.0f });
 	if (ImGui::BeginMainMenuBar())
 	{
-		if (!App::GetWindow()->IsMaximized() && ImGui::IsWindowHovered() && ImGui::IsMouseClicked(ImGuiMouseButton_Left, true))
+		bool hovered = ImGui::IsWindowHovered();
+		bool maximized = wind->IsMaximized();
+
+		if(hovered)
 		{
-			dragging = true;
+			if (ImGui::IsMouseDoubleClicked(ImGuiMouseButton_Left))
+			{
+				if (maximized)
+					glfwRestoreWindow(wind->GetGLFWWindow());
+				else
+					glfwMaximizeWindow(wind->GetGLFWWindow());
+			}
+			else if(!maximized && ImGui::IsMouseClicked(ImGuiMouseButton_Left, true))
+			{
+				dragging = true;
+			}
 		}
-		if (!ImGui::IsMouseDown(ImGuiMouseButton_Left))
+
+		if (!ImGui::IsMouseDown(ImGuiMouseButton_Left) || wind->IsResizing())
 		{
 			dragging = false;
 		}
-
+		
 		if (dragging)
 		{
 			ImVec2 delta = ImGui::GetMouseDragDelta(ImGuiMouseButton_Left);
@@ -51,15 +66,17 @@ void Sandbox::Update()
 
 		float offset = ImGui::GetWindowWidth() - (ImGui::GetWindowHeight() + 20.0f + 4.0f);
 		ImGui::SetCursorPosX(offset);
-		ImGui::SetCursorPosY(0.0f);
+		ImGui::SetCursorPosY(-3.0f);
 		ImGui::PushStyleColor(ImGuiCol_::ImGuiCol_Button, ImVec4{ 0.0f, 0.0f, 0.0f, 0.0f });
 		ImGui::PushStyleVar(ImGuiStyleVar_FramePadding, ImVec2{ 20.0f, 10.0f });
-		if (ImGui::ImageButton("0", x_tex->GetDescriptorSet(), ImVec2{ImGui::GetWindowHeight() * 0.5f , ImGui::GetWindowHeight() * 0.5f }))
+		if (ImGui::ImageButton("Exit", x_tex->GetDescriptorSet(), ImVec2{ImGui::GetWindowHeight() * 0.6f , ImGui::GetWindowHeight() * 0.6f }))
 			glfwSetWindowShouldClose(wind->GetGLFWWindow(), GLFW_TRUE);
 
 		ImGui::SetCursorPosX(offset - (ImGui::GetWindowHeight() + 20.0f + 4.0f));
-		ImGui::SetCursorPosY(0.0f);
-		if (ImGui::ImageButton("1", square_tex->GetDescriptorSet(), ImVec2{ ImGui::GetWindowHeight() * 0.5f, ImGui::GetWindowHeight() * 0.5f }))
+		ImGui::SetCursorPosY(-3.0f);
+		ImTextureID tex = wind->IsMaximized() ? minimize_tex->GetDescriptorSet() : square_tex->GetDescriptorSet();
+
+		if (ImGui::ImageButton("Maximize", tex, ImVec2{ ImGui::GetWindowHeight() * 0.6f, ImGui::GetWindowHeight() * 0.6f }))
 		{
 			if (wind->IsMaximized())
 				glfwRestoreWindow(wind->GetGLFWWindow());
@@ -68,8 +85,8 @@ void Sandbox::Update()
 		}
 
 		ImGui::SetCursorPosX(offset - 2 * (ImGui::GetWindowHeight() + 20.0f + 4.0f));
-		ImGui::SetCursorPosY(0.0f);
-		if (ImGui::ImageButton("2", line_tex->GetDescriptorSet(), ImVec2{ ImGui::GetWindowHeight() * 0.5f, ImGui::GetWindowHeight() * 0.5f }))
+		ImGui::SetCursorPosY(-3.0f);
+		if (ImGui::ImageButton("Minimize", line_tex->GetDescriptorSet(), ImVec2{ ImGui::GetWindowHeight() * 0.6f, ImGui::GetWindowHeight() * 0.6f }))
 		{
 			glfwIconifyWindow(wind->GetGLFWWindow());
 		}
@@ -97,6 +114,7 @@ void Sandbox::End()
 	delete x_tex;
 	delete square_tex;
 	delete line_tex;
+	delete minimize_tex;
 	delete pixels;
 }
 

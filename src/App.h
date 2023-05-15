@@ -12,7 +12,7 @@ namespace Iceberg {
 	private:
 		static App* instance;
 	protected:
-		App(const int window_width = 1600, const int window_height = 900, const char* const icon_path = nullptr);
+		App(const int window_width = 1600, const int window_height = 900, const bool borderless = false, const char* const icon_path = nullptr);
 		virtual ~App();
 		App(const App&) = delete;
 		App& operator=(const App&) = delete;

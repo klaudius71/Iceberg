@@ -34,6 +34,7 @@ private:
 	Iceberg::Texture* x_tex;
 	Iceberg::Texture* square_tex;
 	Iceberg::Texture* line_tex;
+	Iceberg::Texture* minimize_tex;
 };
 
 #endif // !_SANDBOX

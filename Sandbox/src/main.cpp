@@ -11,7 +11,7 @@ struct MemMarker
 
 int main()
 {
-	Sandbox* sandbox = new Sandbox(1600, 900, nullptr);
+	Sandbox* sandbox = new Sandbox(1600, 900, "assets/textures/icon.png");
 	sandbox->Run();
 	delete sandbox;
 }

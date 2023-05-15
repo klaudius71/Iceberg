@@ -3,7 +3,7 @@
 
 namespace Iceberg {
 
-	Window::Window(const int width, const int height, const char* const icon_path)
+	Window::Window(const int width, const int height, const bool borderless, const char* const icon_path)
 		: prev_window_pos_x(0), prev_window_pos_y(0),
 		prev_window_width(0), prev_window_height(0),
 		window_width(width), window_height(height)
@@ -15,9 +15,9 @@ namespace Iceberg {
 			throw std::exception("Failed to initialize GLFW!");
 
 		glfwWindowHint(GLFW_CLIENT_API, GLFW_NO_API);
-		glfwWindowHint(GLFW_DECORATED, GLFW_FALSE);
+		glfwWindowHint(GLFW_DECORATED, borderless ? GLFW_FALSE : GLFW_TRUE);
 
-		window = glfwCreateWindow(width, height, "Glacier V2", nullptr, nullptr);
+		window = glfwCreateWindow(width, height, "Iceberg", nullptr, nullptr);
 		if (!window)
 		{
 			glfwTerminate();
@@ -27,7 +27,7 @@ namespace Iceberg {
 		auto videoMode = glfwGetVideoMode(glfwGetPrimaryMonitor());
 		glfwSetWindowPos(window, (videoMode->width  - width) / 2, (videoMode->height  - height) / 2);
 
-		//SetWindowLongPtr(glfwGetWin32Window(window), GWL_STYLE, WS_BORDER);
+		//SetWindowLongPtr(glfwGetWin32Window(window), GWL_STYLE, WS_SIZEBOX);
 		//SetWindowPos(glfwGetWin32Window(window), HWND_TOPMOST, 100, 100, width, height, SWP_SHOWWINDOW);
 
 		if (glfwVulkanSupported() == GLFW_FALSE)
@@ -38,13 +38,14 @@ namespace Iceberg {
 
 		hori_resize = glfwCreateStandardCursor(GLFW_HRESIZE_CURSOR);
 		vert_resize = glfwCreateStandardCursor(GLFW_VRESIZE_CURSOR);
-		fwd_resize = glfwCreateStandardCursor(GLFW_RESIZE_NESW_CURSOR);
-		bwd_resize = glfwCreateStandardCursor(GLFW_RESIZE_NWSE_CURSOR);
+		nesw_resize = glfwCreateStandardCursor(GLFW_RESIZE_NESW_CURSOR);
+		nwse_resize = glfwCreateStandardCursor(GLFW_RESIZE_NWSE_CURSOR);
 
 		glfwSetWindowUserPointer(window, this);
 		glfwSetKeyCallback(window, glfw_key_callback);
 		glfwSetWindowMaximizeCallback(window, glfw_maximize_callback);
 		glfwSetCursorPosCallback(window, glfw_cursor_pos_callback);
+		glfwSetWindowSizeCallback(window, glfw_window_resize_callback);
 
 		glfwGetWindowPos(window, &prev_window_pos_x, &prev_window_pos_y);
 
@@ -55,6 +56,62 @@ namespace Iceberg {
 	{
 		glfwDestroyWindow(window);
 		glfwTerminate();
+	}
+
+	void Window::Update()
+	{
+		double xpos, ypos;
+		glfwGetCursorPos(window, &xpos, &ypos);
+
+		static bool right = false;
+		static bool down = false;
+		static bool inArea = false;
+		static int window_x = 0;
+		static int window_y = 0;
+		static int window_width_prev = 0;
+		static int window_height_prev = 0;
+		if (!maximized && !dragging)
+		{
+			right = xpos >= GetWindowWidth() - 6.0f;
+			down = ypos >= GetWindowHeight() - 6.0f;
+			inArea = right || down;
+		}
+
+		mouse_click = glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_LEFT);
+		static double prev_xpos = 0, prev_ypos = 0;
+		if (!mouse_click)
+		{
+			dragging = false;
+			prev_xpos = xpos;
+			prev_ypos = ypos;
+		}
+
+		if (inArea && mouse_click)
+		{
+			if (!dragging)
+			{
+				glfwGetWindowPos(window, &window_x, &window_y);
+				glfwGetWindowSize(window, &window_width_prev, &window_height_prev);
+			}
+			dragging = true;
+		}
+
+		if (dragging)
+		{
+			int delta_x = (int)(xpos - prev_xpos);
+			int delta_y = (int)(ypos - prev_ypos);
+
+			int new_window_width = window_width_prev;
+			int new_window_height = window_height_prev;
+
+			if (right)
+				new_window_width += delta_x;
+
+			if (down)
+				new_window_height += delta_y;
+
+			glfwSetWindowSize(window, new_window_width, new_window_height);
+		}
 	}
 
 	const int Window::GetWindowWidth() const
@@ -87,6 +144,10 @@ namespace Iceberg {
 	{
 		return maximized;
 	}
+	bool Window::IsResizing() const
+	{
+		return dragging;
+	}
 
 	GLFWcursor* const Window::GetHoriResizeCursor() const
 	{
@@ -96,13 +157,13 @@ namespace Iceberg {
 	{
 		return vert_resize;
 	}
-	GLFWcursor* const Window::GetFwdResizeCursor() const
+	GLFWcursor* const Window::GetNESWResizeCursor() const
 	{
-		return fwd_resize;
+		return nesw_resize;
 	}
-	GLFWcursor* const Window::GetBwdResizeCursor() const
+	GLFWcursor* const Window::GetNWSEResizeCursor() const
 	{
-		return bwd_resize;
+		return nwse_resize;
 	}
 
 	HWND Window::GetNativeWindow() const
@@ -111,13 +172,12 @@ namespace Iceberg {
 	}
 	void Window::SetWindowIcon(const char* const icon_path)
 	{
-		UNREFERENCED_PARAMETER(icon_path);
-		//int x, y, channels;
-		//uint8_t* img = stbi_load(icon_path, &x, &y, &channels, 0);
-		//assert(img);
-		//GLFWimage glfwImg{ x, y, img };
-		//glfwSetWindowIcon(window, 1, &glfwImg);
-		//stbi_image_free(img);
+		int x, y, channels;
+		uint8_t* img = stbi_load(icon_path, &x, &y, &channels, 0);
+		assert(img);
+		GLFWimage glfwImg{ x, y, img };
+		glfwSetWindowIcon(window, 1, &glfwImg);
+		stbi_image_free(img);
 	}
 
 	const bool Window::IsOpen()
@@ -149,40 +209,31 @@ namespace Iceberg {
 		//printf("%.2f %.2f\n", xpos, ypos);
 		Window* wind = (Window*)glfwGetWindowUserPointer(window);
 
-		bool left = xpos <= 6.0;
-		bool right = xpos >= wind->GetWindowWidth() - 6.0f;
-		bool up = ypos <= 6.0;
-		bool down = ypos >= wind->GetWindowHeight() - 6.0f;
-
-		if (!wind->maximized)
+		if (!wind->maximized && !wind->dragging)
 		{
-			if (left)
-				if (up)
-					glfwSetCursor(window, wind->GetBwdResizeCursor());
-				else if (down)
-					glfwSetCursor(window, wind->GetFwdResizeCursor());
+			bool right = xpos >= wind->GetWindowWidth() - 6.0f;
+			bool down = ypos >= wind->GetWindowHeight() - 6.0f;
+
+			if (right)
+				if (down)
+					glfwSetCursor(window, wind->GetNWSEResizeCursor());
 				else
 					glfwSetCursor(window, wind->GetHoriResizeCursor());
-			else if (right)
-				if (up)
-					glfwSetCursor(window, wind->GetFwdResizeCursor());
-				else if (down)
-					glfwSetCursor(window, wind->GetBwdResizeCursor());
-				else
-					glfwSetCursor(window, wind->GetHoriResizeCursor());
-			else if (up || down)
+			else if (down)
 				glfwSetCursor(window, wind->GetVertResizeCursor());
 			else
 				glfwSetCursor(window, NULL);
 		}
-		else
-		{
-			glfwSetCursor(window, NULL);
-		}				
 	}
 	void Window::glfw_maximize_callback(GLFWwindow* window, int maximized)
 	{
 		Window* wind = (Window*)glfwGetWindowUserPointer(window);
 		wind->maximized = maximized;
+	}
+	void Window::glfw_window_resize_callback(GLFWwindow* window, int width, int height)
+	{
+		Window* wind = (Window*)glfwGetWindowUserPointer(window);
+		wind->window_width = width;
+		wind->window_height = height;
 	}
 }
