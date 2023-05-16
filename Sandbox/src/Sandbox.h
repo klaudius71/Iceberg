@@ -22,8 +22,11 @@ public:
 	static uint32_t ConvertToRGBA(const glm::vec4& color);
 
 private:
-	glm::vec4 PerPixel(uint32_t x, uint32_t y);
+	glm::vec4 PerPixel(glm::vec2 fragCoords);
 	void Resize(uint32_t width, uint32_t height);
+
+	glm::vec3 spherePos{};
+	float sphereRadius = 0.5f;
 
 	bool dragging;
 	int prev_window_position_x;
