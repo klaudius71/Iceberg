@@ -22,13 +22,13 @@ void Sandbox::Update()
 	const Iceberg::Window* wind = GetWindow();
 	
 	ImGuiIO& io = ImGui::GetIO();
-
+	
 	ImGui::PushStyleVar(ImGuiStyleVar_FramePadding, ImVec2{ 0.0f, 10.0f });
 	if (ImGui::BeginMainMenuBar())
 	{
 		bool hovered = ImGui::IsWindowHovered();
 		bool maximized = wind->IsMaximized();
-
+	
 		if(hovered)
 		{
 			if (ImGui::IsMouseDoubleClicked(ImGuiMouseButton_Left))
@@ -43,7 +43,7 @@ void Sandbox::Update()
 				dragging = true;
 			}
 		}
-
+	
 		if (!ImGui::IsMouseDown(ImGuiMouseButton_Left) || wind->IsResizing())
 		{
 			dragging = false;
@@ -59,12 +59,12 @@ void Sandbox::Update()
 		{
 			glfwGetWindowPos(wind->GetGLFWWindow(), &prev_window_position_x, &prev_window_position_y);
 		}
-
+	
 		ImGui::PushFont(font);
 		ImGui::SetCursorPosY(-7.0f);
 		ImGui::Text("Iceberg");
 		ImGui::PopFont();
-
+	
 		float offset = ImGui::GetWindowWidth() - (ImGui::GetWindowHeight() + 20.0f + 4.0f);
 		ImGui::SetCursorPosX(offset);
 		ImGui::SetCursorPosY(-3.0f);
@@ -72,11 +72,11 @@ void Sandbox::Update()
 		ImGui::PushStyleVar(ImGuiStyleVar_FramePadding, ImVec2{ 20.0f, 10.0f });
 		if (ImGui::ImageButton("Exit", x_tex->GetDescriptorSet(), ImVec2{ImGui::GetWindowHeight() * 0.6f , ImGui::GetWindowHeight() * 0.6f }))
 			glfwSetWindowShouldClose(wind->GetGLFWWindow(), GLFW_TRUE);
-
+	
 		ImGui::SetCursorPosX(offset - (ImGui::GetWindowHeight() + 20.0f + 4.0f));
 		ImGui::SetCursorPosY(-3.0f);
 		ImTextureID tex = wind->IsMaximized() ? minimize_tex->GetDescriptorSet() : square_tex->GetDescriptorSet();
-
+	
 		if (ImGui::ImageButton("Maximize", tex, ImVec2{ ImGui::GetWindowHeight() * 0.6f, ImGui::GetWindowHeight() * 0.6f }))
 		{
 			if (wind->IsMaximized())
@@ -84,21 +84,21 @@ void Sandbox::Update()
 			else
 				glfwMaximizeWindow(wind->GetGLFWWindow());
 		}
-
+	
 		ImGui::SetCursorPosX(offset - 2 * (ImGui::GetWindowHeight() + 20.0f + 4.0f));
 		ImGui::SetCursorPosY(-3.0f);
 		if (ImGui::ImageButton("Minimize", line_tex->GetDescriptorSet(), ImVec2{ ImGui::GetWindowHeight() * 0.6f, ImGui::GetWindowHeight() * 0.6f }))
 		{
 			glfwIconifyWindow(wind->GetGLFWWindow());
 		}
-
+	
 		ImGui::PopStyleVar();
 		ImGui::PopStyleColor();
-
+	
 		ImGui::EndMainMenuBar();
 	}
 	ImGui::PopStyleVar();
-
+	
 	ImGui::PushStyleVar(ImGuiStyleVar_::ImGuiStyleVar_WindowPadding, ImVec2{ 0,0 });
 	ImGui::Begin("Image Example");
 	ImVec2 window_size = ImGui::GetContentRegionAvail();
@@ -107,7 +107,7 @@ void Sandbox::Update()
 	ImGui::Image(img1->GetImGuiTexture(), window_size);
 	ImGui::End();
 	ImGui::PopStyleVar();
-
+	
 	ImGui::ShowDemoWindow();
 }
 

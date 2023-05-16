@@ -25,14 +25,14 @@ namespace Iceberg {
 			throw std::exception("Failed to create a window!");
 		}
 
+		SetWindowLongPtr(glfwGetWin32Window(window), GWL_STYLE, WS_SIZEBOX);
+		SetWindowPos(glfwGetWin32Window(window), HWND_TOPMOST, 0, 0, width, height, SWP_SHOWWINDOW);
+
 		auto videoMode = glfwGetVideoMode(glfwGetPrimaryMonitor());
 		glfwSetWindowPos(window, (videoMode->width  - width) / 2, (videoMode->height  - height) / 2);
 
-		SetWindowLongPtr(glfwGetWin32Window(window), GWL_STYLE, WS_SIZEBOX);
-		SetWindowPos(glfwGetWin32Window(window), HWND_TOPMOST, 100, 100, width, height, SWP_SHOWWINDOW);
-
-		//HBRUSH brush = CreateSolidBrush(RGB(0, 0, 0));
-		//SetClassLongPtr(glfwGetWin32Window(window), GCLP_HBRBACKGROUND, (LONG_PTR)brush);
+		HBRUSH brush = CreateSolidBrush(RGB(0, 0, 0));
+		SetClassLongPtr(glfwGetWin32Window(window), GCLP_HBRBACKGROUND, (LONG_PTR)brush);
 
 		if (glfwVulkanSupported() == GLFW_FALSE)
 		{

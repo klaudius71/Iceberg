@@ -7,12 +7,14 @@
 #include <chrono>
 #include <vector>
 
-#include "vulkan/vulkan.h"
+#include "IcebergCore.h"
+
+#include VULKAN_INCLUDE
 #include "../external/glfw/include/GLFW/glfw3.h"
 //#include "../external/glfw/include/GLFW/glfw3native.h"
 
-#include "glm/glm.hpp"
-#include "glm/ext.hpp"
+#include "glm.hpp"
+#include "ext.hpp"
 
 #include "../external/imgui/imgui.h"
 

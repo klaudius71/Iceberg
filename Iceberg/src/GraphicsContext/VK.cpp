@@ -25,7 +25,15 @@ namespace Iceberg {
 		assert(!instance && "VK instance already created!");
 		instance = (VK*)malloc(sizeof(VK));
 		memset(instance, 0, sizeof(VK));
+
+		try {
+
 		new(instance) VK;
+
+		}
+		catch (const std::exception& e) {
+			MessageBoxA(NULL, e.what(), "Error", MB_ICONERROR | MB_OK);
+		}
 	}
 	VkInstance VK::GetVkInstance()
 	{
@@ -446,8 +454,16 @@ namespace Iceberg {
 	
 	void VK::InitializeVulkan()
 	{
-		if (ENABLE_VALIDATION_LAYERS && !CheckValidationLayerSupport())
-			throw std::exception("Validation layers requested, but not available!");
+		VkResult res;
+#if ICEBERG_VOLK
+		res = volkInitialize();
+		if (res != VK_SUCCESS)
+			throw std::exception("Failed to initialize volk!");
+#endif
+
+		if constexpr (ENABLE_VALIDATION_LAYERS)
+			if(!CheckValidationLayerSupport())
+				throw std::exception("Validation layers requested, but not available!");
 
 		VkApplicationInfo appInfo{};
 		appInfo.sType = VK_STRUCTURE_TYPE_APPLICATION_INFO;
@@ -462,7 +478,7 @@ namespace Iceberg {
 		createInfo.pApplicationInfo = &appInfo;
 
 		VkDebugUtilsMessengerCreateInfoEXT debugCreateInfo{};
-		if (ENABLE_VALIDATION_LAYERS)
+		if constexpr (ENABLE_VALIDATION_LAYERS)
 		{
 			createInfo.enabledLayerCount = 1;
 			createInfo.ppEnabledLayerNames = validationLayers;
@@ -485,6 +501,10 @@ namespace Iceberg {
 		VkResult result = vkCreateInstance(&createInfo, nullptr, &vkInstance);
 		if (result != VK_SUCCESS)
 			throw std::exception("Failed to create a Vulkan instance!");
+
+#if ICEBERG_VOLK
+		volkLoadInstance(vkInstance);
+#endif
 
 		uint32_t extensionCount = 0;
 		vkEnumerateInstanceExtensionProperties(nullptr, &extensionCount, nullptr);
@@ -566,6 +586,10 @@ namespace Iceberg {
 		VkResult res = vkCreateDevice(physicalDevice, &createInfo, nullptr, &device);
 		if (res != VK_SUCCESS)
 			throw std::exception("Failed to create logical device!");
+
+#if ICEBERG_VOLK
+		volkLoadDevice(device);
+#endif
 
 		vkGetDeviceQueue(device, indices.graphicsFamily, 0, &graphicsQueue);
 		vkGetDeviceQueue(device, indices.presentFamily, 0, &presentQueue);
@@ -787,6 +811,8 @@ namespace Iceberg {
 		if (res != VK_SUCCESS)
 			throw std::exception("Couldn't create descriptor pool!");
 
+		auto f = [](const char* function_name, void*) { return vkGetInstanceProcAddr(Instance().GetVkInstance(), function_name); };
+		ImGui_ImplVulkan_LoadFunctions(f);
 		ImGui_ImplGlfw_InitForVulkan(App::GetWindow()->GetGLFWWindow(), true);
 		
 		ImGui_ImplVulkan_InitInfo init_info = {};
@@ -883,13 +909,13 @@ namespace Iceberg {
 
 		vkCmdBindPipeline(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, graphicsPipeline->GetPipeline());
 
-		//VkBuffer vertexBuffers[]{ vertexBuffer->GetVkBuffer() };
-		//VkDeviceSize offsets[]{ 0 };
-		//vkCmdBindVertexBuffers(commandBuffer, 0, 1, vertexBuffers, offsets);
-		//vkCmdBindIndexBuffer(commandBuffer, indexBuffer->GetVkBuffer(), offsets[0], VK_INDEX_TYPE_UINT32);
-		//
-		//VkDescriptorSet descSets[]{ descriptorSet->GetVkDescriptorSet()[currentFrame], crateTexture->GetDescriptorSet()};
-		//vkCmdBindDescriptorSets(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, graphicsPipeline->GetPipelineLayout(), 0, (uint32_t)std::size(descSets), descSets, 0, nullptr);
+		VkBuffer vertexBuffers[]{ vertexBuffer->GetVkBuffer() };
+		VkDeviceSize offsets[]{ 0 };
+		vkCmdBindVertexBuffers(commandBuffer, 0, 1, vertexBuffers, offsets);
+		vkCmdBindIndexBuffer(commandBuffer, indexBuffer->GetVkBuffer(), offsets[0], VK_INDEX_TYPE_UINT32);
+		
+		VkDescriptorSet descSets[]{ descriptorSet->GetVkDescriptorSet()[currentFrame], crateTexture->GetDescriptorSet()};
+		vkCmdBindDescriptorSets(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, graphicsPipeline->GetPipelineLayout(), 0, (uint32_t)std::size(descSets), descSets, 0, nullptr);
 
 		VkViewport viewport{};
 		viewport.x = 0.0f;
@@ -905,7 +931,7 @@ namespace Iceberg {
 		scissor.extent = swapChainExtent;
 		vkCmdSetScissor(commandBuffer, 0, 1, &scissor);
 
-		//vkCmdDrawIndexed(commandBuffer, (uint32_t)indices.size(), 1, 0, 0, 0);
+		vkCmdDrawIndexed(commandBuffer, (uint32_t)indices.size(), 1, 0, 0, 0);
 
 		ImGui_ImplVulkan_RenderDrawData(ImGui::GetDrawData(), commandBuffer, VK_NULL_HANDLE);
 

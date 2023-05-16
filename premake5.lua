@@ -6,7 +6,26 @@ workspace "Iceberg"
     warnings "Default"
 
 outputdir = "%{cfg.system}-%{cfg.architecture}/%{cfg.buildcfg}"
-VULKAN_SDK = os.getenv("VULKAN_SDK")
+
+newoption {
+    trigger = "VulkanSDK",
+    value = "API",
+    description = "Choose how to load Vulkan",
+    allowed = {
+       { "sdk",    "SDK" },
+       { "volk",  "volk" }
+    },
+    default = "sdk"
+ }
+
+if _OPTIONS["VulkanSDK"] == "volk" then
+    VULKAN_HEADERS = "%{wks.location}/Iceberg/external/Vulkan-Headers/include"
+    VULKAN_INCLUDE = "%{wks.location}/Iceberg/external/volk"
+else
+    VULKAN_SDK = os.getenv("VULKAN_SDK")
+    VULKAN_HEADERS = "%{VULKAN_SDK}/Include"
+    VULKAN_INCLUDE = "%{VULKAN_SDK}/Include"
+end
 
 group "Dependencies"
     include "Iceberg/external"
@@ -30,16 +49,10 @@ project "Iceberg"
         "Iceberg/src/**.cpp"
     }
 
-    libdirs
-    {
-        "%{VULKAN_SDK}/Lib"
-    }
-
     links 
     { 
         "GLFW",
         "imgui",
-        "vulkan-1.lib"
     }
 
     includedirs 
@@ -51,12 +64,21 @@ project "Iceberg"
         "Iceberg/src/GraphicsContext/Buffers",
         "Iceberg/src/GraphicsContext/Pipeline",
         "Iceberg/src/GraphicsContext/Texture",
-        "%{VULKAN_SDK}/Include",
+        "%{VULKAN_INCLUDE}",
         "Iceberg/external/glfw/include",
         "Iceberg/external/glm/include",
         "Iceberg/external/imgui",
         "Iceberg/external/stb"
     }
+    
+    filter { "options:VulkanSDK=sdk" }
+        libdirs { "%{VULKAN_SDK}/Lib" }
+        links { "vulkan-1.lib" }
+
+    filter { "options:VulkanSDK=volk" }
+        links { "volk" }
+        defines { "ICEBERG_VOLK" }
+        includedirs { "%{VULKAN_HEADERS}" }
 
     filter { "platforms:x64" }
         architecture "x64"
@@ -100,12 +122,16 @@ project "Sandbox"
         "Iceberg/src/GraphicsContext/Buffers",
         "Iceberg/src/GraphicsContext/Pipeline",
         "Iceberg/src/GraphicsContext/Texture",
-        "%{VULKAN_SDK}/Include",
+        "%{VULKAN_INCLUDE}",
         "Iceberg/external/glfw/include",
         "Iceberg/external/glm/include",
         "Iceberg/external/imgui",
         "Iceberg/external/stb"
     }
+
+    filter { "options:VulkanSDK=volk" }
+        defines { "ICEBERG_VOLK" }
+        includedirs { "%{VULKAN_HEADERS}" }
 
     filter { "platforms:x64" }
         architecture "x64"

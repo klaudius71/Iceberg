@@ -6,12 +6,6 @@
 
 namespace Iceberg {
 
-#ifdef _DEBUG
-	constexpr bool ENABLE_VALIDATION_LAYERS = true;
-#else
-	constexpr bool ENABLE_VALIDATION_LAYERS = false;
-#endif
-
 	class VertexBuffer;
 	class IndexBuffer;
 	class UniformBuffer;

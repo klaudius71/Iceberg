@@ -56,6 +56,45 @@ project "GLFW"
 		runtime "Release"
 		optimize "on"
         
+if _OPTIONS["VulkanSDK"] == "volk" then
+project "volk"
+    location "volk"
+    kind "StaticLib"
+    language "C"
+    
+    targetdir ("%{wks.location}/bin/" .. outputdir .. "/%{prj.name}")
+    objdir ("%{wks.location}/bin-int/" .. outputdir .. "/%{prj.name}")
+
+    files
+	{
+		"volk/volk.h",
+        "volk/volk.c"
+	}
+
+	includedirs
+	{
+		"%{VULKAN_HEADERS}",
+	}
+
+	filter "system:windows"
+		defines { "VK_USE_PLATFORM_WIN32_KHR" }
+
+	filter "system:linux"
+		defines { "VK_USE_PLATFORM_XLIB_KHR" }
+
+	filter "system:macosx"
+		defines { "VK_USE_PLATFORM_MACOS_MVK" }
+
+    filter "configurations:Debug"
+		runtime "Debug"
+		symbols "on"
+
+	filter "configurations:Release"
+		runtime "Release"
+		optimize "on"
+
+end
+
 project "imgui"
     location "imgui"
     kind "StaticLib"
@@ -75,7 +114,7 @@ project "imgui"
     {
         "imgui",
         "glfw/include",
-        "%{VULKAN_SDK}/Include"
+        "%{VULKAN_HEADERS}"
     }
 
     filter "system:windows"
@@ -89,6 +128,9 @@ project "imgui"
             "imgui/backends/imgui_impl_vulkan.cpp"
         }
         
+    filter "options:VulkanSDK=volk"
+        defines { "IMGUI_IMPL_VULKAN_NO_PROTOTYPES" }
+
     filter "configurations:Debug"
         runtime "Debug"
         symbols "on"

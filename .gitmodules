@@ -5,3 +5,9 @@
 [submodule "Iceberg/external/glfw"]
 	path = Iceberg/external/glfw
 	url = https://github.com/glfw/glfw
+[submodule "Iceberg/external/Vulkan-Headers"]
+	path = Iceberg/external/Vulkan-Headers
+	url = https://github.com/KhronosGroup/Vulkan-Headers
+[submodule "Iceberg/external/volk"]
+	path = Iceberg/external/volk
+	url = https://github.com/zeux/volk

@@ -5,6 +5,8 @@
 #define GLFW_EXPOSE_NATIVE_WIN32
 #endif
 
+#include "IcebergCore.h"
+
 #include <cassert>
 #include <cstdio>
 #include <chrono>
@@ -15,7 +17,7 @@
 #include <fstream>
 #include <array>
 
-#include "vulkan/vulkan.h"
+#include VULKAN_INCLUDE
 #include "GLFW/glfw3.h"
 #include "GLFW/glfw3native.h"
 
