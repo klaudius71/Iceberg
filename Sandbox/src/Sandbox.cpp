@@ -51,8 +51,9 @@ void Sandbox::Update()
 		
 		if (dragging)
 		{
-			ImVec2 delta = ImGui::GetMouseDragDelta(ImGuiMouseButton_Left);
-			glfwSetWindowPos(wind->GetGLFWWindow(), prev_window_position_x + (int)delta.x, prev_window_position_y + (int)delta.y);
+			ImVec2 delta = ImGui::GetMouseDragDelta(ImGuiMouseButton_Left, 0.0f);
+			// I have no idea why, but clicking and dragging moves the window by exactly 7 on each coordinate
+			glfwSetWindowPos(wind->GetGLFWWindow(), prev_window_position_x + (int)delta.x - 7, prev_window_position_y + (int)delta.y - 7);
 		}
 		else
 		{
@@ -106,6 +107,8 @@ void Sandbox::Update()
 	ImGui::Image(img1->GetImGuiTexture(), window_size);
 	ImGui::End();
 	ImGui::PopStyleVar();
+
+	ImGui::ShowDemoWindow();
 }
 
 void Sandbox::End()

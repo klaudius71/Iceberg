@@ -38,7 +38,7 @@ namespace Iceberg {
 		io.ConfigFlags |= ImGuiConfigFlags_ViewportsEnable;         // Enable Multi-Viewport / Platform Windows	
 		// io.ConfigViewportsNoAutoMerge = true;
 		// io.ConfigViewportsNoTaskBarIcon = true;
-		io.ConfigFlags |= ImGuiConfigFlags_NoMouseCursorChange;
+		//io.ConfigFlags |= ImGuiConfigFlags_NoMouseCursorChange;
 
 		// Setup Dear ImGui style
 		ImGui::StyleColorsDark();
@@ -64,9 +64,7 @@ namespace Iceberg {
 			ImGui_ImplGlfw_NewFrame();
 			ImGui::NewFrame();
 			ImGui::DockSpaceOverViewport(ImGui::GetMainViewport());
-			
-			ImGui::ShowDemoWindow();
-			
+						
 			Update();
 			
 			ImGui::Render();

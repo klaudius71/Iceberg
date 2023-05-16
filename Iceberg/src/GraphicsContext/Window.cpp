@@ -28,8 +28,11 @@ namespace Iceberg {
 		auto videoMode = glfwGetVideoMode(glfwGetPrimaryMonitor());
 		glfwSetWindowPos(window, (videoMode->width  - width) / 2, (videoMode->height  - height) / 2);
 
-		//SetWindowLongPtr(glfwGetWin32Window(window), GWL_STYLE, WS_SIZEBOX);
-		//SetWindowPos(glfwGetWin32Window(window), HWND_TOPMOST, 100, 100, width, height, SWP_SHOWWINDOW);
+		SetWindowLongPtr(glfwGetWin32Window(window), GWL_STYLE, WS_SIZEBOX);
+		SetWindowPos(glfwGetWin32Window(window), HWND_TOPMOST, 100, 100, width, height, SWP_SHOWWINDOW);
+
+		//HBRUSH brush = CreateSolidBrush(RGB(0, 0, 0));
+		//SetClassLongPtr(glfwGetWin32Window(window), GCLP_HBRBACKGROUND, (LONG_PTR)brush);
 
 		if (glfwVulkanSupported() == GLFW_FALSE)
 		{
@@ -61,58 +64,58 @@ namespace Iceberg {
 
 	void Window::Update()
 	{
-		double xpos, ypos;
-		glfwGetCursorPos(window, &xpos, &ypos);
-
-		static bool right = false;
-		static bool down = false;
-		static bool inArea = false;
-		static int window_x = 0;
-		static int window_y = 0;
-		static int window_width_prev = 0;
-		static int window_height_prev = 0;
-		if (!maximized && !dragging)
-		{
-			right = xpos >= GetWindowWidth() - 6.0f;
-			down = ypos >= GetWindowHeight() - 6.0f;
-			inArea = right || down;
-		}
-
-		mouse_click = glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_LEFT);
-		static double prev_xpos = 0, prev_ypos = 0;
-		if (!mouse_click)
-		{
-			dragging = false;
-			prev_xpos = xpos;
-			prev_ypos = ypos;
-		}
-
-		if (inArea && mouse_click)
-		{
-			if (!dragging)
-			{
-				glfwGetWindowPos(window, &window_x, &window_y);
-				glfwGetWindowSize(window, &window_width_prev, &window_height_prev);
-			}
-			dragging = true;
-		}
-
-		if (dragging)
-		{
-			int delta_x = (int)(xpos - prev_xpos);
-			int delta_y = (int)(ypos - prev_ypos);
-
-			int new_window_width = window_width_prev;
-			int new_window_height = window_height_prev;
-
-			if (right)
-				new_window_width += delta_x;
-
-			if (down)
-				new_window_height += delta_y;
-
-			glfwSetWindowSize(window, new_window_width, new_window_height);
-		}
+		//double xpos, ypos;
+		//glfwGetCursorPos(window, &xpos, &ypos);
+		//
+		//static bool right = false;
+		//static bool down = false;
+		//static bool inArea = false;
+		//static int window_x = 0;
+		//static int window_y = 0;
+		//static int window_width_prev = 0;
+		//static int window_height_prev = 0;
+		//if (!maximized && !dragging)
+		//{
+		//	right = xpos >= GetWindowWidth() - 6.0f;
+		//	down = ypos >= GetWindowHeight() - 6.0f;
+		//	inArea = right || down;
+		//}
+		//
+		//mouse_click = glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_LEFT);
+		//static double prev_xpos = 0, prev_ypos = 0;
+		//if (!mouse_click)
+		//{
+		//	dragging = false;
+		//	prev_xpos = xpos;
+		//	prev_ypos = ypos;
+		//}
+		//
+		//if (inArea && mouse_click)
+		//{
+		//	if (!dragging)
+		//	{
+		//		glfwGetWindowPos(window, &window_x, &window_y);
+		//		glfwGetWindowSize(window, &window_width_prev, &window_height_prev);
+		//	}
+		//	dragging = true;
+		//}
+		//
+		//if (dragging)
+		//{
+		//	int delta_x = (int)(xpos - prev_xpos);
+		//	int delta_y = (int)(ypos - prev_ypos);
+		//
+		//	int new_window_width = window_width_prev;
+		//	int new_window_height = window_height_prev;
+		//
+		//	if (right)
+		//		new_window_width += delta_x;
+		//
+		//	if (down)
+		//		new_window_height += delta_y;
+		//
+		//	glfwSetWindowSize(window, new_window_width, new_window_height);
+		//}
 	}
 
 	const int Window::GetWindowWidth() const
@@ -210,21 +213,21 @@ namespace Iceberg {
 		//printf("%.2f %.2f\n", xpos, ypos);
 		Window* wind = (Window*)glfwGetWindowUserPointer(window);
 
-		if (!wind->maximized && !wind->dragging)
-		{
-			bool right = xpos >= wind->GetWindowWidth() - 6.0f;
-			bool down = ypos >= wind->GetWindowHeight() - 6.0f;
-
-			if (right)
-				if (down)
-					glfwSetCursor(window, wind->GetNWSEResizeCursor());
-				else
-					glfwSetCursor(window, wind->GetHoriResizeCursor());
-			else if (down)
-				glfwSetCursor(window, wind->GetVertResizeCursor());
-			else
-				glfwSetCursor(window, NULL);
-		}
+		//if (!wind->maximized && !wind->dragging)
+		//{
+		//	bool right = xpos >= wind->GetWindowWidth() - 6.0f;
+		//	bool down = ypos >= wind->GetWindowHeight() - 6.0f;
+		//
+		//	if (right)
+		//		if (down)
+		//			glfwSetCursor(window, wind->GetNWSEResizeCursor());
+		//		else
+		//			glfwSetCursor(window, wind->GetHoriResizeCursor());
+		//	else if (down)
+		//		glfwSetCursor(window, wind->GetVertResizeCursor());
+		//	else
+		//		glfwSetCursor(window, NULL);
+		//}
 	}
 	void Window::glfw_maximize_callback(GLFWwindow* window, int maximized)
 	{
