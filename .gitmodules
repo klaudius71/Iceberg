@@ -11,3 +11,6 @@
 [submodule "Iceberg/external/volk"]
 	path = Iceberg/external/volk
 	url = https://github.com/zeux/volk
+[submodule "Iceberg/external/glm"]
+	path = Iceberg/external/glm
+	url = https://github.com/g-truc/glm
