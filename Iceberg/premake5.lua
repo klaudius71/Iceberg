@@ -56,7 +56,7 @@ project "Iceberg"
         "src/GraphicsContext/Texture",
         "%{VULKAN_INCLUDE}",
         "external/glfw/include",
-        "external/glm/include",
+        "external/glm",
         "external/imgui",
         "external/stb"
     }

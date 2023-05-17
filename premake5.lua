@@ -46,7 +46,7 @@ project "Sandbox"
         "Iceberg/src/GraphicsContext/Texture",
         "%{VULKAN_INCLUDE}",
         "Iceberg/external/glfw/include",
-        "Iceberg/external/glm/include",
+        "Iceberg/external/glm",
         "Iceberg/external/imgui",
         "Iceberg/external/stb"
     }

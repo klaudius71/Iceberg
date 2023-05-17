@@ -28,8 +28,8 @@
 #define GLM_FORCE_SSE42
 #define GLM_FORCE_INLINE
 #define GLM_ENABLE_EXPERIMENTAL // glm::length2() is experimental for some reason
-#include "glm.hpp"
-#include "ext.hpp"
+#include "glm/glm.hpp"
+#include "glm/ext.hpp"
 
 #include "imgui.h"
 #include "backends/imgui_impl_glfw.h"
