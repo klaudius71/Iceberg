@@ -1,16 +1,16 @@
-[submodule "Iceberg/external/imgui"]
-	path = Iceberg/external/imgui
+[submodule "external/imgui"]
+	path = external/imgui
 	url = https://github.com/ocornut/imgui
 	branch = docking
-[submodule "Iceberg/external/glfw"]
-	path = Iceberg/external/glfw
+[submodule "external/glfw"]
+	path = external/glfw
 	url = https://github.com/glfw/glfw
-[submodule "Iceberg/external/Vulkan-Headers"]
-	path = Iceberg/external/Vulkan-Headers
+[submodule "external/Vulkan-Headers"]
+	path = external/Vulkan-Headers
 	url = https://github.com/KhronosGroup/Vulkan-Headers
-[submodule "Iceberg/external/volk"]
-	path = Iceberg/external/volk
+[submodule "external/volk"]
+	path = external/volk
 	url = https://github.com/zeux/volk
-[submodule "Iceberg/external/glm"]
-	path = Iceberg/external/glm
+[submodule "external/glm"]
+	path = external/glm
 	url = https://github.com/g-truc/glm
