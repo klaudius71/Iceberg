@@ -97,7 +97,7 @@ namespace Iceberg {
 		CreateDescriptorPool();
 		CreateDescriptorSetLayouts();
 
-		crateTexture = new Texture("assets/textures/crate_diffuse.tga");
+		//crateTexture = new Texture("assets/textures/crate_diffuse.tga");
 		
 		cameraUniformBuffer = new UniformBuffer(device, sizeof(glm::mat4) * 2);
 		worldUniformBuffer = new UniformBuffer(device, sizeof(glm::mat4));
@@ -914,7 +914,8 @@ namespace Iceberg {
 		vkCmdBindVertexBuffers(commandBuffer, 0, 1, vertexBuffers, offsets);
 		vkCmdBindIndexBuffer(commandBuffer, indexBuffer->GetVkBuffer(), offsets[0], VK_INDEX_TYPE_UINT32);
 		
-		VkDescriptorSet descSets[]{ descriptorSet->GetVkDescriptorSet()[currentFrame], crateTexture->GetDescriptorSet()};
+		//VkDescriptorSet descSets[]{ descriptorSet->GetVkDescriptorSet()[currentFrame], crateTexture->GetDescriptorSet()};
+		VkDescriptorSet descSets[]{ descriptorSet->GetVkDescriptorSet()[currentFrame] };
 		vkCmdBindDescriptorSets(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, graphicsPipeline->GetPipelineLayout(), 0, (uint32_t)std::size(descSets), descSets, 0, nullptr);
 
 		VkViewport viewport{};
