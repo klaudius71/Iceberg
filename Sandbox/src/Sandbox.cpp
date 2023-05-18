@@ -1,7 +1,7 @@
 #include "Sandbox.h"
 
 Sandbox::Sandbox(const int width, const int height, const char* const icon_path)
-	: App(width, height, true, icon_path), img1(nullptr), x_tex(nullptr), square_tex(nullptr), line_tex(nullptr), font(nullptr), pixels(nullptr), dragging(false)
+	: App(width, height, true, icon_path), img1(nullptr), x_tex(nullptr), square_tex(nullptr), line_tex(nullptr), font(nullptr), pixels(nullptr)
 {
 }
 
@@ -19,6 +19,8 @@ void Sandbox::Start()
 
 void Sandbox::Update()
 {
+	glfwSetWindowCaptionArea(App::GetWindow()->GetGLFWWindow(), 0, 0, App::GetWindow()->GetWindowWidth() - 175, 30);
+
 	const Iceberg::Window* wind = GetWindow();
 	
 	ImGuiIO& io = ImGui::GetIO();
@@ -26,40 +28,6 @@ void Sandbox::Update()
 	ImGui::PushStyleVar(ImGuiStyleVar_FramePadding, ImVec2{ 0.0f, 10.0f });
 	if (ImGui::BeginMainMenuBar())
 	{
-		bool hovered = ImGui::IsWindowHovered();
-		bool maximized = wind->IsMaximized();
-	
-		if(hovered)
-		{
-			if (ImGui::IsMouseDoubleClicked(ImGuiMouseButton_Left))
-			{
-				if (maximized)
-					glfwRestoreWindow(wind->GetGLFWWindow());
-				else
-					glfwMaximizeWindow(wind->GetGLFWWindow());
-			}
-			else if(!maximized && ImGui::IsMouseClicked(ImGuiMouseButton_Left, true))
-			{
-				dragging = true;
-			}
-		}
-	
-		if (!ImGui::IsMouseDown(ImGuiMouseButton_Left) || wind->IsResizing())
-		{
-			dragging = false;
-		}
-		
-		if (dragging)
-		{
-			ImVec2 delta = ImGui::GetMouseDragDelta(ImGuiMouseButton_Left, 0.0f);
-			// I have no idea why, but clicking and dragging moves the window by exactly 7 on each coordinate
-			glfwSetWindowPos(wind->GetGLFWWindow(), prev_window_position_x + (int)delta.x - 7, prev_window_position_y + (int)delta.y - 7);
-		}
-		else
-		{
-			glfwGetWindowPos(wind->GetGLFWWindow(), &prev_window_position_x, &prev_window_position_y);
-		}
-	
 		ImGui::PushFont(font);
 		ImGui::SetCursorPosY(-7.0f);
 		ImGui::Text("Iceberg");
@@ -108,11 +76,6 @@ void Sandbox::Update()
 	ImGui::End();
 	ImGui::PopStyleVar();
 
-	ImGui::Begin("Testing");
-	ImGui::DragFloat3("Sphere Position", glm::value_ptr(spherePos), 0.01f);
-	ImGui::DragFloat("Sphere Radius", &sphereRadius, 0.01f);
-	ImGui::End();
-
 	ImGui::ShowDemoWindow();
 }
 
@@ -153,27 +116,7 @@ uint32_t Sandbox::ConvertToRGBA(const glm::vec4& color)
 
 glm::vec4 Sandbox::PerPixel(glm::vec2 fragCoords)
 {
-	glm::vec3 rayOrigin(0.0f, 0.0f, -1.0f);
-	glm::vec3 rayDirection(fragCoords.x, fragCoords.y, -1.0f);
-
-	glm::vec3 oc = rayOrigin - spherePos;
-
-	float a = glm::dot(rayDirection, rayDirection);
-	float b = 2.0f * glm::dot(oc, rayDirection);
-	float c = glm::dot(oc, oc) - sphereRadius * sphereRadius;
-
-	float discriminant = b * b - 4.0f * a * c;
-
-	if (discriminant >= 0.0f)
-	{
-		float t = (-b - glm::sqrt(discriminant)) / (2.0f * a);
-		glm::vec3 hitPoint = oc + rayDirection * t;
-
-		return glm::vec4(0.5f * (hitPoint + glm::vec3(1.0f)), 1.0f);
-	}
-
-	return glm::vec4{ 0.0f, 0.0f, 0.0f, 1.0f};
-	//return glm::vec4{ (float)rand() / RAND_MAX, (float)rand() / RAND_MAX , (float)rand() / RAND_MAX , 1.0f };
+	return glm::vec4{ 0.5f * (fragCoords.y + 1.0f), 0.5f * (fragCoords.x + 1.0f) , 0.5f * (fragCoords.x + 1.0f) , 1.0f };
 }
 
 void Sandbox::Resize(uint32_t width, uint32_t height)

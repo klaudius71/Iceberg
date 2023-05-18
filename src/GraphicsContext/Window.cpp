@@ -25,14 +25,10 @@ namespace Iceberg {
 			throw std::exception("Failed to create a window!");
 		}
 
-		SetWindowLongPtr(glfwGetWin32Window(window), GWL_STYLE, WS_SIZEBOX);
-		SetWindowPos(glfwGetWin32Window(window), HWND_TOPMOST, 0, 0, width, height, SWP_SHOWWINDOW);
+		glfwSetWindowResizeBorderSize(window, 10);
 
 		auto videoMode = glfwGetVideoMode(glfwGetPrimaryMonitor());
 		glfwSetWindowPos(window, (videoMode->width  - width) / 2, (videoMode->height  - height) / 2);
-
-		HBRUSH brush = CreateSolidBrush(RGB(0, 0, 0));
-		SetClassLongPtr(glfwGetWin32Window(window), GCLP_HBRBACKGROUND, (LONG_PTR)brush);
 
 		if (glfwVulkanSupported() == GLFW_FALSE)
 		{
@@ -213,7 +209,7 @@ namespace Iceberg {
 		//printf("%.2f %.2f\n", xpos, ypos);
 		Window* wind = (Window*)glfwGetWindowUserPointer(window);
 
-		//if (!wind->maximized && !wind->dragging)
+		//if (!wind->maximized)
 		//{
 		//	bool right = xpos >= wind->GetWindowWidth() - 6.0f;
 		//	bool down = ypos >= wind->GetWindowHeight() - 6.0f;

@@ -25,12 +25,6 @@ private:
 	glm::vec4 PerPixel(glm::vec2 fragCoords);
 	void Resize(uint32_t width, uint32_t height);
 
-	glm::vec3 spherePos{};
-	float sphereRadius = 0.5f;
-
-	bool dragging;
-	int prev_window_position_x;
-	int prev_window_position_y;
 	uint32_t* pixels;
 	ImFont* font;
 	Iceberg::Image* img1;
