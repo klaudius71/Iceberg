@@ -8,16 +8,8 @@ newoption {
     },
     default = "sdk"
 }
-newoption { 
-    trigger = "include-sandbox",
-    value = "sand",
-    description = "Include the Sandbox project",
-    allowed = {
-        { "no", "No" },
-        { "yes", "Yes" }
-    },
-    default = "no"
-}
+
+VULKAN_SDK = os.getenv("VULKAN_SDK")
 
 group "Dependencies"
     include "external"

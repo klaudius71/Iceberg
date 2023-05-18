@@ -44,6 +44,12 @@ project "Sandbox"
         "external/stb"
     }
 
+    filter { "options:VulkanSDK=sdk" }
+        includedirs
+        {
+            "%{VULKAN_SDK}/Include"
+        }
+
     filter { "options:VulkanSDK=volk" }
         defines { "ICEBERG_VOLK" }
         includedirs 

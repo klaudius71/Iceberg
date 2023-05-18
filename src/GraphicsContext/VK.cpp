@@ -498,8 +498,8 @@ namespace Iceberg {
 		std::vector<const char*> glfwExtensions = GetRequiredExtensions();
 		createInfo.enabledExtensionCount = (uint32_t)glfwExtensions.size();
 		createInfo.ppEnabledExtensionNames = glfwExtensions.data();
-		VkResult result = vkCreateInstance(&createInfo, nullptr, &vkInstance);
-		if (result != VK_SUCCESS)
+		res = vkCreateInstance(&createInfo, nullptr, &vkInstance);
+		if (res != VK_SUCCESS)
 			throw std::exception("Failed to create a Vulkan instance!");
 
 #if ICEBERG_VOLK
