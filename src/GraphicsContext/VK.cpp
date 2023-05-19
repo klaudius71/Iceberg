@@ -703,7 +703,8 @@ namespace Iceberg {
 	{
 		graphicsPipeline = new Pipeline(device, "assets/shaders/vert.spv", "assets/shaders/frag.spv");
 		graphicsPipeline->SetRenderPass(renderPass);
-		VkDescriptorSetLayout descriptorSetLayouts[]{ descriptorSetLayoutUniform, descriptorSetLayoutSampler };
+		//VkDescriptorSetLayout descriptorSetLayouts[]{ descriptorSetLayoutUniform, descriptorSetLayoutSampler };
+		VkDescriptorSetLayout descriptorSetLayouts[]{ descriptorSetLayoutUniform };
 		graphicsPipeline->SetDescriptorSetLayouts(descriptorSetLayouts, (uint32_t)std::size(descriptorSetLayouts));
 		graphicsPipeline->Complete();
 	}

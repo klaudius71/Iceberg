@@ -40,8 +40,8 @@ namespace Iceberg {
 		assert(renderPass != VK_NULL_HANDLE);
 		assert(descriptorSetLayouts.size() != 0);
 
-		auto vertShaderCode = ReadBinaryFile("assets/shaders/vert.spv");
-		auto fragShaderCode = ReadBinaryFile("assets/shaders/frag.spv");
+		auto vertShaderCode = ReadBinaryFile(vertex_shader_filename);
+		auto fragShaderCode = ReadBinaryFile(fragment_shader_filename);
 
 		VkShaderModule vertShaderModule = CreateShaderModule(vertShaderCode);
 		VkShaderModule fragShaderModule = CreateShaderModule(fragShaderCode);
