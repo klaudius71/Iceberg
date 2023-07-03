@@ -155,7 +155,7 @@ namespace Iceberg {
 
 		VkResult res = vkCreatePipelineLayout(device, &pipelineLayoutInfo, nullptr, &pipelineLayout);
 		if (res != VK_SUCCESS)
-			throw std::exception("Failed to create pipeline layout!");
+			throw std::runtime_error("Failed to create pipeline layout!");
 
 		// Pipeline creation
 		VkPipelineShaderStageCreateInfo shaderStages[] = { vertShaderStageInfo, fragShaderStageInfo };
@@ -180,7 +180,7 @@ namespace Iceberg {
 
 		res = vkCreateGraphicsPipelines(device, VK_NULL_HANDLE, 1, &pipelineInfo, nullptr, &graphicsPipeline);
 		if (res != VK_SUCCESS)
-			throw std::exception("Failed to create graphics pipeline!");
+			throw std::runtime_error("Failed to create graphics pipeline!");
 
 		vkDestroyShaderModule(device, vertShaderModule, nullptr);
 		vkDestroyShaderModule(device, fragShaderModule, nullptr);
@@ -199,7 +199,7 @@ namespace Iceberg {
 	{
 		std::ifstream file(filename, std::ios::ate | std::ios::binary);
 		if (!file.is_open())
-			throw std::exception(("Could not open file " + std::string(filename)).c_str());
+			throw std::runtime_error(("Could not open file " + std::string(filename)).c_str());
 
 		size_t file_size = (size_t)file.tellg();
 		std::vector<uint8_t> buffer(file_size);
@@ -218,7 +218,7 @@ namespace Iceberg {
 		VkShaderModule shaderModule;
 		VkResult res = vkCreateShaderModule(device, &createInfo, nullptr, &shaderModule);
 		if (res != VK_SUCCESS)
-			throw std::exception("Failed to create shader module!");
+			throw std::runtime_error("Failed to create shader module!");
 
 		return shaderModule;
 	}

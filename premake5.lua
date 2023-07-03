@@ -25,9 +25,12 @@ project "Sandbox"
         "Sandbox/src/**.cpp"
     }
 
-    links 
+    links
     { 
-        "Iceberg"
+        "Iceberg",
+        "GLFW",
+        "volk",
+        "imgui"
     }
 
     includedirs 

@@ -37,7 +37,7 @@ namespace Iceberg {
 	
 		void* mem;
 		stagingBuffer->Map(mem);
-		memcpy_s(mem, width * height * 4, pixels, width * height * 4);
+		memcpy(mem, pixels, width * height * 4);
 		stagingBuffer->Unmap();
 		stagingBuffer->TransferBuffer(vkTexture);
 	}

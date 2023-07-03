@@ -27,7 +27,7 @@ namespace Iceberg {
 
 		VkResult res = vkCreateBuffer(dev, &bufferInfo, nullptr, &buffer);
 		if (res != VK_SUCCESS)
-			throw std::exception("Failed to create buffer!");
+			throw std::runtime_error("Failed to create buffer!");
 
 		VkMemoryRequirements memRequirements;
 		vkGetBufferMemoryRequirements(dev, buffer, &memRequirements);
@@ -39,7 +39,7 @@ namespace Iceberg {
 
 		res = vkAllocateMemory(dev, &allocInfo, nullptr, &bufferMemory);
 		if (res != VK_SUCCESS)
-			throw std::exception("Failed to allocate buffer memory!");
+			throw std::runtime_error("Failed to allocate buffer memory!");
 
 		Bind();
 	}

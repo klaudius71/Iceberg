@@ -14,7 +14,7 @@ namespace Iceberg {
 		int x, y, components;
 		uint8_t* img = stbi_load(filename, &x, &y, &components, 4);
 		if (!img)
-			throw std::exception(("Failed to load " + std::string(filename)).c_str());
+			throw std::runtime_error(("Failed to load " + std::string(filename)).c_str());
 		width = x;
 		height = y;
 
@@ -22,7 +22,7 @@ namespace Iceberg {
 		StagingBuffer stagingBuffer(device, deviceSize);
 		void* mem;
 		stagingBuffer.Map(mem);
-		memcpy_s(mem, deviceSize, img, deviceSize);
+		memcpy(mem, img, deviceSize);
 		stagingBuffer.Unmap();
 		stbi_image_free(img);
 
@@ -144,7 +144,7 @@ namespace Iceberg {
 		VkResult res;
 		res = vkCreateImage(device, &imageInfo, nullptr, &image);
 		if (res != VK_SUCCESS)
-			throw std::exception("Failed to create image!");
+			throw std::runtime_error("Failed to create image!");
 
 		VkMemoryRequirements memRequirements;
 		vkGetImageMemoryRequirements(device, image, &memRequirements);
@@ -156,7 +156,7 @@ namespace Iceberg {
 
 		res = vkAllocateMemory(device, &allocInfo, nullptr, &imageMemory);
 		if (res != VK_SUCCESS)
-			throw std::exception("Failed to allocate image memory!");
+			throw std::runtime_error("Failed to allocate image memory!");
 	}
 	void Texture::transitionImageLayout(VkFormat format, VkImageLayout oldLayout, VkImageLayout newLayout)
 	{
@@ -222,7 +222,7 @@ namespace Iceberg {
 
 		VkResult res = vkCreateImageView(device, &viewInfo, nullptr, &imageView);
 		if (res != VK_SUCCESS)
-			throw std::exception("Failed to create texture image view!");
+			throw std::runtime_error("Failed to create texture image view!");
 	}
 	void Texture::createSampler(VkFilter minFilter, VkFilter magFilter)
 	{
@@ -247,7 +247,7 @@ namespace Iceberg {
 
 		VkResult res = vkCreateSampler(device, &samplerInfo, nullptr, &sampler);
 		if (res != VK_SUCCESS)
-			throw std::exception("Failed to create texture sampler!");
+			throw std::runtime_error("Failed to create texture sampler!");
 	}
 	void Texture::cleanup()
 	{

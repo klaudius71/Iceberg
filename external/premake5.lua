@@ -11,7 +11,7 @@ project "GLFW"
     files
 	{
 		"glfw/include/GLFW/glfw3.h",
-		"glfw/include/GLFW/glfw3native.h",        
+		"glfw/include/GLFW/glfw3native.h",     
         "glfw/src/context.c",
         "glfw/src/init.c",
         "glfw/src/input.c",
@@ -47,6 +47,33 @@ project "GLFW"
 			"_GLFW_WIN32",
 			"_CRT_SECURE_NO_WARNINGS"
 		}
+
+    filter "system:linux"
+        pic "On"
+
+        systemversion "latest"
+        staticruntime "On"
+
+        files
+        {
+            "glfw/src/x11_init.c",
+            "glfw/src/x11_monitor.c",
+            "glfw/src/x11_window.c",
+            "glfw/src/xkb_unicode.c",
+            "glfw/src/posix_time.c",
+            "glfw/src/posix_module.c",
+            "glfw/src/posix_thread.c",
+            "glfw/src/posix_poll.c",
+            "glfw/src/glx_context.c",
+            "glfw/src/egl_context.c",
+            "glfw/src/osmesa_context.c",
+            "glfw/src/linux_joystick.c"
+        }
+
+        defines
+        {
+            "_GLFW_X11"
+        }
 
 	filter "configurations:Debug"
 		runtime "Debug"
@@ -116,16 +143,21 @@ project "imgui"
         "glfw/include",
     }
 
+    files
+    {
+        "imgui/backends/imgui_impl_glfw.h",
+        "imgui/backends/imgui_impl_glfw.cpp",
+        "imgui/backends/imgui_impl_vulkan.h",
+        "imgui/backends/imgui_impl_vulkan.cpp"
+    }
+    
     filter "system:windows"
         staticruntime "On"
-        files
-        {
-            "imgui/backends/imgui_impl_glfw.h",
-            "imgui/backends/imgui_impl_glfw.cpp",
-            "imgui/backends/imgui_impl_vulkan.h",
-            "imgui/backends/imgui_impl_vulkan.cpp"
-        }
-        
+    
+    filter "system:linux"
+        pic "On"
+        staticruntime "On"
+
     filter "options:VulkanSDK=sdk"
         includedirs { "%{VULKAN_SDK}/Include" }
 

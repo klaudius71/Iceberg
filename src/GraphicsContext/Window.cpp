@@ -13,7 +13,7 @@ namespace Iceberg {
 
 		int err = glfwInit();
 		if (err == -1)
-			throw std::exception("Failed to initialize GLFW!");
+			throw std::runtime_error("Failed to initialize GLFW!");
 
 		glfwWindowHint(GLFW_CLIENT_API, GLFW_NO_API);
 		glfwWindowHint(GLFW_DECORATED, borderless ? GLFW_FALSE : GLFW_TRUE);
@@ -22,7 +22,7 @@ namespace Iceberg {
 		if (!window)
 		{
 			glfwTerminate();
-			throw std::exception("Failed to create a window!");
+			throw std::runtime_error("Failed to create a window!");
 		}
 
 		glfwSetWindowResizeBorderSize(window, 10);
@@ -33,7 +33,7 @@ namespace Iceberg {
 		if (glfwVulkanSupported() == GLFW_FALSE)
 		{
 			glfwTerminate();
-			throw std::exception("Vulkan support not found!");
+			throw std::runtime_error("Vulkan support not found!");
 		}
 
 		hori_resize = glfwCreateStandardCursor(GLFW_HRESIZE_CURSOR);
@@ -166,10 +166,10 @@ namespace Iceberg {
 		return nwse_resize;
 	}
 
-	HWND Window::GetNativeWindow() const
-	{
-		return glfwGetWin32Window(window);
-	}
+	//HWND Window::GetNativeWindow() const
+	//{
+	//	return glfwGetWin32Window(window);
+	//}
 	void Window::SetWindowIcon(const char* const icon_path)
 	{
 		int x, y, channels;
@@ -192,8 +192,8 @@ namespace Iceberg {
 	void Window::glfw_error_callback(int error_code, const char* description)
 	{
 		UNREFERENCED_PARAMETER(error_code);
-		printf(description);
-		printf("\n");
+		assert(description);
+		printf("%s\n", description);
 	}
 	void Window::glfw_key_callback(GLFWwindow* window, int key, int scancode, int action, int mods)
 	{

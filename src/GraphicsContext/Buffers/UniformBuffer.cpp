@@ -38,7 +38,7 @@ namespace Iceberg {
 	{
 		assert(data);
 		assert(size <= bufferSize);
-		memcpy_s(dataPtr[VK::GetCurrentFrame()], bufferSize, data, size);
+		memcpy(dataPtr[VK::GetCurrentFrame()], data, size);
 	}
 
 }

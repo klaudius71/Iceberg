@@ -22,7 +22,7 @@ namespace Iceberg {
 		VkResult res;
 		res = vkAllocateDescriptorSets(VK::GetLogicalDevice(), &allocInfo, descriptorSet);
 		if (res != VK_SUCCESS)
-			throw std::exception("Failed to allocate descriptor set!");
+			throw std::runtime_error("Failed to allocate descriptor set!");
 	}
 	DescriptorSet::~DescriptorSet()
 	{
@@ -128,8 +128,8 @@ namespace Iceberg {
 			vkUpdateDescriptorSets(VK::GetLogicalDevice(), (uint32_t)descriptorWrite->size(), descriptorWrite->data(), 0, nullptr);
 		}
 
-		for (auto bufferInfo : bufferInfos)
-			delete bufferInfo;
+		for (void* bufferInfo : bufferInfos)
+			free(bufferInfo);
 		
 		delete descriptorWrite;
 		descriptorWrite = nullptr;

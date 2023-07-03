@@ -87,8 +87,12 @@ namespace Iceberg {
 		End();
 
 		}
-		catch (const std::exception& e) {
+		catch (const std::runtime_error& e) {
+#if _WIN32
 			MessageBoxA(NULL, e.what(), "Error", MB_ICONERROR | MB_OK);
+#else
+			printf("%s\n", e.what());
+#endif
 		}
 	}
 

@@ -3,6 +3,8 @@
 #if _WIN32
 #include <windows.h>
 #define GLFW_EXPOSE_NATIVE_WIN32
+#else
+#define UNREFERENCED_PARAMETER(x) (x)
 #endif
 
 #include "IcebergCore.h"

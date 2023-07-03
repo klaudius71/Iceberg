@@ -33,7 +33,7 @@ namespace Iceberg {
 		GLFWcursor* const GetNWSEResizeCursor() const;
 
 		void SetWindowIcon(const char* const icon_path);
-		HWND GetNativeWindow() const;
+		//HWND GetNativeWindow() const;
 
 		const bool IsOpen();
 		void PollEvents();

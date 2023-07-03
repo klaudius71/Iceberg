@@ -1,7 +1,12 @@
 #ifndef _ICEBERG_API
 #define _ICEBERG_API
 
+#ifdef _WIN32
 #include <windows.h>
+#else
+#define UNREFERENCED_PARAMETER(x) (x)
+#endif
+
 #include <cassert>
 #include <cstdio>
 #include <chrono>

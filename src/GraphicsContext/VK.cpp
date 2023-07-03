@@ -31,8 +31,12 @@ namespace Iceberg {
 		new(instance) VK;
 
 		}
-		catch (const std::exception& e) {
+		catch (const std::runtime_error& e) {
+#if _WIN32
 			MessageBoxA(NULL, e.what(), "Error", MB_ICONERROR | MB_OK);
+#else
+			printf("%s\n", e.what());
+#endif
 		}
 	}
 	VkInstance VK::GetVkInstance()
@@ -51,7 +55,7 @@ namespace Iceberg {
 			if ((typeFilter & (1 << i)) && (memProperties.memoryTypes[i].propertyFlags & properties) == properties)
 				return i;
 
-		throw std::exception("Failed to find suitable memory type!");
+		throw std::runtime_error("Failed to find suitable memory type!");
 
 		return 0;
 	}
@@ -112,7 +116,7 @@ namespace Iceberg {
 		StagingBuffer stagingBuffer(device, bufferSize);
 		void* mem;
 		stagingBuffer.Map(mem);
-		memcpy_s(mem, bufferSize, vertices.data(), bufferSize);
+		memcpy(mem, vertices.data(), bufferSize);
 		stagingBuffer.Unmap();
 		stagingBuffer.TransferBuffer(vertexBuffer);
 
@@ -121,7 +125,7 @@ namespace Iceberg {
 		indexBuffer = new IndexBuffer(device, (uint32_t)indices.size());
 		stagingBuffer.Resize(bufferSize);
 		stagingBuffer.Map(mem);
-		memcpy_s(mem, bufferSize, indices.data(), bufferSize);
+		memcpy(mem, indices.data(), bufferSize);
 		stagingBuffer.Unmap();
 		stagingBuffer.TransferBuffer(indexBuffer);
 
@@ -214,7 +218,7 @@ namespace Iceberg {
 	VkSurfaceFormatKHR VK::ChooseSwapSurfaceFormat(const std::vector<VkSurfaceFormatKHR>& availableFormats)
 	{
 		if (availableFormats.empty())
-			throw std::exception("No available swapchain surface formats available!");
+			throw std::runtime_error("No available swapchain surface formats available!");
 
 		//for (const auto& availableFormat : availableFormats)
 		//{
@@ -302,7 +306,7 @@ namespace Iceberg {
 
 		VkResult res = vkCreateSwapchainKHR(device, &createInfo, nullptr, &swapChain);
 		if (res != VK_SUCCESS)
-			throw std::exception("Failed to create a swap chain!");
+			throw std::runtime_error("Failed to create a swap chain!");
 
 		//uint32_t imageCount;
 		res = vkGetSwapchainImagesKHR(device, swapChain, &imageCount, nullptr);
@@ -336,7 +340,7 @@ namespace Iceberg {
 			createInfo.image = swapChainImages[i];
 			VkResult res = vkCreateImageView(device, &createInfo, nullptr, &swapChainImageViews[i]);
 			if (res != VK_SUCCESS)
-				throw std::exception("Failed to create image views!");
+				throw std::runtime_error("Failed to create image views!");
 		}
 	}
 	void VK::CleanupSwapChain()
@@ -449,7 +453,7 @@ namespace Iceberg {
 
 		VkResult res = CreateDebugUtilsMessengerEXT(vkInstance, &createInfo, nullptr, &debugMessenger);
 		if (res != VK_SUCCESS)
-			throw std::exception("Failed to set up debug messenger!");
+			throw std::runtime_error("Failed to set up debug messenger!");
 	}
 	
 	void VK::InitializeVulkan()
@@ -458,12 +462,12 @@ namespace Iceberg {
 #if ICEBERG_VOLK
 		res = volkInitialize();
 		if (res != VK_SUCCESS)
-			throw std::exception("Failed to initialize volk!");
+			throw std::runtime_error("Failed to initialize volk!");
 #endif
 
 		if constexpr (ENABLE_VALIDATION_LAYERS)
 			if(!CheckValidationLayerSupport())
-				throw std::exception("Validation layers requested, but not available!");
+				throw std::runtime_error("Validation layers requested, but not available!");
 
 		VkApplicationInfo appInfo{};
 		appInfo.sType = VK_STRUCTURE_TYPE_APPLICATION_INFO;
@@ -500,7 +504,7 @@ namespace Iceberg {
 		createInfo.ppEnabledExtensionNames = glfwExtensions.data();
 		res = vkCreateInstance(&createInfo, nullptr, &vkInstance);
 		if (res != VK_SUCCESS)
-			throw std::exception("Failed to create a Vulkan instance!");
+			throw std::runtime_error("Failed to create a Vulkan instance!");
 
 #if ICEBERG_VOLK
 		volkLoadInstance(vkInstance);
@@ -520,7 +524,7 @@ namespace Iceberg {
 		uint32_t deviceCount = 0;
 		vkEnumeratePhysicalDevices(vkInstance, &deviceCount, nullptr);
 		if (deviceCount <= 0)
-			throw std::exception("Could not find GPUs that support Vulkan!");
+			throw std::runtime_error("Could not find GPUs that support Vulkan!");
 
 		std::vector<VkPhysicalDevice> devices(deviceCount);
 		vkEnumeratePhysicalDevices(vkInstance, &deviceCount, devices.data());
@@ -540,7 +544,7 @@ namespace Iceberg {
 		}
 
 		if (physicalDevice == VK_NULL_HANDLE)
-			throw std::exception("Failed to find suitable GPU!");
+			throw std::runtime_error("Failed to find suitable GPU!");
 	}
 	void VK::CreateLogicalDevice()
 	{
@@ -585,7 +589,7 @@ namespace Iceberg {
 
 		VkResult res = vkCreateDevice(physicalDevice, &createInfo, nullptr, &device);
 		if (res != VK_SUCCESS)
-			throw std::exception("Failed to create logical device!");
+			throw std::runtime_error("Failed to create logical device!");
 
 #if ICEBERG_VOLK
 		volkLoadDevice(device);
@@ -599,7 +603,7 @@ namespace Iceberg {
 	{
 		VkResult res = glfwCreateWindowSurface(vkInstance, App::GetWindow()->GetGLFWWindow(), nullptr, &surface);
 		if (res != VK_SUCCESS)
-			throw std::exception("Failed to create window surface!");
+			throw std::runtime_error("Failed to create window surface!");
 	}
 
 	void VK::CreateRenderPass()
@@ -645,7 +649,7 @@ namespace Iceberg {
 
 		VkResult res = vkCreateRenderPass(device, &renderPassInfo, nullptr, &renderPass);
 		if (res != VK_SUCCESS)
-			throw std::exception("Failed to create render pass!");
+			throw std::runtime_error("Failed to create render pass!");
 	}
 	void VK::CreateDescriptorSetLayouts()
 	{
@@ -666,13 +670,13 @@ namespace Iceberg {
 		VkResult res;
 		res = vkCreateDescriptorSetLayout(device, &layoutInfo, nullptr, &descriptorSetLayoutUniform);
 		if (res != VK_SUCCESS)
-			throw std::exception("Failed to create descriptor set layout!");
+			throw std::runtime_error("Failed to create descriptor set layout!");
 
 		layoutInfo.bindingCount = (uint32_t)std::size(layoutBinding2);
 		layoutInfo.pBindings = layoutBinding2;
 		res = vkCreateDescriptorSetLayout(device, &layoutInfo, nullptr, &descriptorSetLayoutSampler);
 		if (res != VK_SUCCESS)
-			throw std::exception("Failed to create descriptor set layout!");
+			throw std::runtime_error("Failed to create descriptor set layout!");
 	}
 	void VK::CreateDescriptorPool()
 	{
@@ -690,7 +694,7 @@ namespace Iceberg {
 		
 		VkResult res = vkCreateDescriptorPool(device, &poolInfo, nullptr, &descriptorPool);
 		if (res != VK_SUCCESS)
-			throw std::exception("Failed to create uniform buffer descriptor pool!");
+			throw std::runtime_error("Failed to create uniform buffer descriptor pool!");
 	}
 	void VK::CreateDescriptorSets()
 	{
@@ -743,7 +747,7 @@ namespace Iceberg {
 
 		VkResult res = vkCreateCommandPool(device, &poolInfo, nullptr, &commandPool);
 		if (res != VK_SUCCESS)
-			throw std::exception("Failed to create command pool!");
+			throw std::runtime_error("Failed to create command pool!");
 	}
 	void VK::CreateCommandBuffer()
 	{
@@ -755,7 +759,7 @@ namespace Iceberg {
 
 		VkResult res = vkAllocateCommandBuffers(device, &allocInfo, commandBuffer);
 		if (res != VK_SUCCESS)
-			throw std::exception("Failed to allocate command buffers!");
+			throw std::runtime_error("Failed to allocate command buffers!");
 	}
 
 	void VK::CreateSyncObjects()
@@ -772,15 +776,15 @@ namespace Iceberg {
 		{
 			res = vkCreateSemaphore(device, &semaphoreInfo, nullptr, &imageAvailableSemaphore[i]);
 			if (res != VK_SUCCESS)
-				throw std::exception("Failed to create semaphore!");
+				throw std::runtime_error("Failed to create semaphore!");
 			
 			res = vkCreateSemaphore(device, &semaphoreInfo, nullptr, &renderFinishedSemaphore[i]);
 			if (res != VK_SUCCESS)
-				throw std::exception("Failed to create semaphore!");
+				throw std::runtime_error("Failed to create semaphore!");
 
 			res = vkCreateFence(device, &fenceInfo, nullptr, &inFlightFence[i]);
 			if (res != VK_SUCCESS)
-				throw std::exception("Failed to create fence!");
+				throw std::runtime_error("Failed to create fence!");
 		}		
 	}
 
@@ -810,7 +814,7 @@ namespace Iceberg {
 
 		VkResult res = vkCreateDescriptorPool(VK::GetLogicalDevice(), &pool_info, nullptr, &imguiPool);
 		if (res != VK_SUCCESS)
-			throw std::exception("Couldn't create descriptor pool!");
+			throw std::runtime_error("Couldn't create descriptor pool!");
 
 		auto f = [](const char* function_name, void*) { return vkGetInstanceProcAddr(Instance().GetVkInstance(), function_name); };
 		ImGui_ImplVulkan_LoadFunctions(f);
@@ -841,11 +845,11 @@ namespace Iceberg {
 			throw std::runtime_error("failed to begin recording command buffer!");
 		
 		if (!ImGui_ImplVulkan_CreateFontsTexture(commandBuffer[0]))
-			throw std::exception("failed to initialize ImGui!");
+			throw std::runtime_error("failed to initialize ImGui!");
 
 		res = vkEndCommandBuffer(commandBuffer[0]);
 		if (res != VK_SUCCESS)
-			throw std::exception("Failed to record command buffer!");
+			throw std::runtime_error("Failed to record command buffer!");
 		
 
 		VkSubmitInfo submitInfo{};
@@ -855,7 +859,7 @@ namespace Iceberg {
 
 		res = vkQueueSubmit(graphicsQueue, 1, &submitInfo, inFlightFence[0]);
 		if (res != VK_SUCCESS)
-			throw std::exception("Failed to submit draw command buffer!");
+			throw std::runtime_error("Failed to submit draw command buffer!");
 
 		vkWaitForFences(device, 1, &inFlightFence[0], VK_TRUE, UINT64_MAX);		
 
@@ -941,7 +945,7 @@ namespace Iceberg {
 
 		res = vkEndCommandBuffer(commandBuffer);
 		if (res != VK_SUCCESS)
-			throw std::exception("Failed to record command buffer!");
+			throw std::runtime_error("Failed to record command buffer!");
 	}
 	void VK::drawFrame()
 	{
@@ -956,7 +960,7 @@ namespace Iceberg {
 			return;
 		}
 		else if (res != VK_SUCCESS && res != VK_SUBOPTIMAL_KHR) {
-			throw std::exception("Failed to acquire swap chain image!");
+			throw std::runtime_error("Failed to acquire swap chain image!");
 		}
 
 		vkResetFences(device, 1, &inFlightFence[currentFrame]);
@@ -980,7 +984,7 @@ namespace Iceberg {
 
 		res = vkQueueSubmit(graphicsQueue, 1, &submitInfo, inFlightFence[currentFrame]);
 		if (res != VK_SUCCESS)
-			throw std::exception("Failed to submit draw command buffer!");
+			throw std::runtime_error("Failed to submit draw command buffer!");
 
 		VkPresentInfoKHR presentInfo{};
 		presentInfo.sType = VK_STRUCTURE_TYPE_PRESENT_INFO_KHR;
@@ -997,7 +1001,7 @@ namespace Iceberg {
 		if (res == VK_ERROR_OUT_OF_DATE_KHR || res == VK_SUBOPTIMAL_KHR)
 			RecreateSwapChain();
 		else if (res != VK_SUCCESS)
-			throw std::exception("Failed to present swap chain image!");
+			throw std::runtime_error("Failed to present swap chain image!");
 
 		++currentFrame %= MAX_FRAMES_IN_FLIGHT;
 	}
