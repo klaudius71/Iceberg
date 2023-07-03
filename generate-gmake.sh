@@ -1,0 +1,1 @@
+./external/premake5/premake5 gmake --VulkanSDK=volk
