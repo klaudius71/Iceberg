@@ -29,7 +29,6 @@ project "Sandbox"
     { 
         "Iceberg",
         "GLFW",
-        "volk",
         "imgui"
     }
 
@@ -60,6 +59,7 @@ project "Sandbox"
             "external/volk",
             "external/Vulkan-Headers/include" 
         }
+        links "volk"
 
     filter { "platforms:x64" }
         architecture "x64"
