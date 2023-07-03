@@ -226,6 +226,12 @@ namespace Iceberg {
 		//		return availableFormat;
 		//}
 
+		for (const VkSurfaceFormatKHR& availableFormat : availableFormats)
+		{
+			if(availableFormat.format == VK_FORMAT_B8G8R8A8_UNORM)
+				return availableFormat;
+		}
+
 		return availableFormats[0];
 	}
 	VkPresentModeKHR VK::ChooseSwapPresentMode(const std::vector<VkPresentModeKHR>& availablePresentModes, bool vsync)
@@ -402,8 +408,7 @@ namespace Iceberg {
 		}
 
 		QueueFamilyIndices queueFamilies = FindQueueFamilies(dev);
-		return deviceProperties.deviceType == VK_PHYSICAL_DEVICE_TYPE_DISCRETE_GPU
-			&& deviceFeatures.geometryShader
+		return deviceFeatures.geometryShader
 			&& queueFamilies.graphicsFamilyExists
 			&& queueFamilies.computeFamilyExists
 			&& queueFamilies.presentFamilyExists

@@ -5,7 +5,8 @@
 namespace Iceberg {
 
 	Buffer::Buffer(VkDevice device, VkDeviceSize size, VkBufferUsageFlags bufferUsage, VkMemoryPropertyFlags properties)
-		: dev(device), size(size)
+		: dev(device), size(size),
+		cpuWriteable(properties & (VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT))
 	{
 		VkBufferCreateInfo bufferInfo{};
 		bufferInfo.sType = VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO;
